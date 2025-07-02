@@ -6,6 +6,7 @@ Um aplicativo moderno de controle de gastos pessoais construído com Next.js 15,
 
 ## ✨ Funcionalidades
 
+- **🔐 Autenticação PIN**: Acesso protegido com PIN de 6 dígitos
 - **📊 Dashboard Interativo**: Visualize seus gastos com gráficos e estatísticas
 - **💸 Gerenciamento de Gastos**: Adicione, edite e exclua gastos facilmente
 - **🏷️ Categorização**: Organize gastos por categorias coloridas
@@ -47,6 +48,9 @@ touch .env
 # Obtenha essas URLs no dashboard do Neon: https://console.neon.tech/
 DATABASE_URL="postgresql://username:password@ep-xxx-pooler.region.neon.tech/database?sslmode=require"
 DIRECT_URL="postgresql://username:password@ep-xxx.region.neon.tech/database?sslmode=require"
+
+# Configure o PIN de autenticação (6 dígitos)
+AUTH_PIN=123456
 ```
 
 **Como obter as URLs do Neon:**
