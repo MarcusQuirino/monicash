@@ -66,16 +66,62 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
     if (active && payload && payload.length) {
       const data = payload[0];
       return (
-        <div className="bg-white p-3 border rounded-lg shadow-lg">
-          <p className="font-medium">{data.payload.name}</p>
-          <p className="text-blue-600">
+        <div className="bg-white p-2 sm:p-3 border rounded-lg shadow-lg text-sm">
+          <p className="font-medium text-xs sm:text-sm">{data.payload.name}</p>
+          <p className="text-blue-600 text-xs sm:text-sm">
             R$ {data.value.toFixed(2).replace(".", ",")}
           </p>
-          <p className="text-gray-500">{data.payload.percentage}%</p>
+          <p className="text-gray-500 text-xs">{data.payload.percentage}%</p>
         </div>
       );
     }
     return null;
+  };
+
+  const CustomLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+  }: {
+    cx?: number;
+    cy?: number;
+    midAngle?: number;
+    innerRadius?: number;
+    outerRadius?: number;
+    percent?: number;
+  }) => {
+    // Guard clause to ensure all required values are present
+    if (
+      !cx ||
+      !cy ||
+      midAngle === undefined ||
+      !innerRadius ||
+      !outerRadius ||
+      percent === undefined
+    ) {
+      return null;
+    }
+
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+    return percent > 0.05 ? (
+      <text
+        x={x}
+        y={y}
+        fill="white"
+        textAnchor={x > cx ? "start" : "end"}
+        dominantBaseline="central"
+        className="text-xs font-medium"
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    ) : null;
   };
 
   if (chartData.length === 0) {
@@ -87,30 +133,64 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
   }
 
   return (
-    <div className="w-full h-80">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            labelLine={false}
-            label={({ name, percentage }) => `${name} (${percentage}%)`}
-            outerRadius={80}
-            fill="#8884d8"
-            dataKey="value"
-          >
-            {chartData.map((entry, index) => (
-              <Cell
-                key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
-              />
-            ))}
-          </Pie>
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="w-full">
+      <div className="h-64 sm:h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              cx="50%"
+              cy="50%"
+              labelLine={false}
+              label={CustomLabel}
+              outerRadius="85%"
+              fill="#8884d8"
+              dataKey="value"
+            >
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip content={<CustomTooltip />} />
+            <Legend
+              wrapperStyle={{
+                fontSize: "12px",
+                paddingTop: "10px",
+              }}
+              iconSize={12}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Mobile Legend Alternative */}
+      <div className="block sm:hidden mt-4">
+        <div className="grid grid-cols-1 gap-2">
+          {chartData.map((entry, index) => (
+            <div
+              key={entry.name}
+              className="flex items-center justify-between text-sm"
+            >
+              <div className="flex items-center space-x-2">
+                <div
+                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                />
+                <span className="text-gray-700 truncate">{entry.name}</span>
+              </div>
+              <div className="flex space-x-2 flex-shrink-0">
+                <span className="text-gray-900 font-medium">
+                  R$ {entry.value.toFixed(2).replace(".", ",")}
+                </span>
+                <span className="text-gray-500">({entry.percentage}%)</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

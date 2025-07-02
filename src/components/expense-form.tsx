@@ -104,9 +104,9 @@ export function ExpenseForm({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-w-[95vw] max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
             {isEditing ? "Editar Gasto" : "Adicionar Novo Gasto"}
           </DialogTitle>
         </DialogHeader>
@@ -118,9 +118,9 @@ export function ExpenseForm({
               name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data</FormLabel>
+                  <FormLabel className="text-sm font-medium">Data</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" {...field} className="text-base" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -132,12 +132,15 @@ export function ExpenseForm({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição (Opcional)</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Descrição (Opcional)
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="No que você gastou?"
                       {...field}
                       rows={3}
+                      className="text-base resize-none"
                     />
                   </FormControl>
                   <FormMessage />
@@ -150,10 +153,12 @@ export function ExpenseForm({
               name="categoryId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria</FormLabel>
+                  <FormLabel className="text-sm font-medium">
+                    Categoria
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="text-base">
                         <SelectValue placeholder="Selecione uma categoria" />
                       </SelectTrigger>
                     </FormControl>
@@ -162,6 +167,7 @@ export function ExpenseForm({
                         <SelectItem
                           key={category.id}
                           value={category.id.toString()}
+                          className="text-base"
                         >
                           {category.name}
                         </SelectItem>
@@ -178,13 +184,15 @@ export function ExpenseForm({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valor</FormLabel>
+                  <FormLabel className="text-sm font-medium">Valor</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
                       step="0.01"
                       placeholder="0,00"
                       {...field}
+                      className="text-base"
+                      inputMode="decimal"
                     />
                   </FormControl>
                   <FormMessage />
@@ -192,11 +200,20 @@ export function ExpenseForm({
               )}
             />
 
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:justify-end sm:space-x-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="w-full sm:w-auto order-2 sm:order-1"
+              >
                 Cancelar
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto order-1 sm:order-2"
+              >
                 {isSubmitting
                   ? isEditing
                     ? "Atualizando..."

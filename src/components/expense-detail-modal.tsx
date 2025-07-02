@@ -92,7 +92,9 @@ export function ExpenseDetailModal({
         <DialogContent className="sm:max-w-lg max-w-[95vw] max-h-[90vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between pr-8">
-              <span className="truncate">Detalhes do Gasto</span>
+              <span className="truncate text-base sm:text-lg">
+                Detalhes do Gasto
+              </span>
               <div className="flex items-center space-x-1 flex-shrink-0">
                 <Button
                   variant="ghost"
@@ -103,7 +105,7 @@ export function ExpenseDetailModal({
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-sm text-gray-500 px-2 whitespace-nowrap">
+                <span className="text-xs sm:text-sm text-gray-500 px-2 whitespace-nowrap">
                   {currentIndex + 1} de {sortedExpenses.length}
                 </span>
                 <Button
@@ -119,10 +121,12 @@ export function ExpenseDetailModal({
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 overflow-y-auto flex-1 min-h-0">
+          <div className="space-y-4 overflow-y-auto flex-1 min-h-0 px-1">
             <div>
-              <label className="text-sm font-medium text-gray-500">Data</label>
-              <p className="text-lg">
+              <label className="text-xs sm:text-sm font-medium text-gray-500">
+                Data
+              </label>
+              <p className="text-base sm:text-lg">
                 {new Date(expense.date).toLocaleDateString("pt-BR", {
                   weekday: "long",
                   year: "numeric",
@@ -133,19 +137,21 @@ export function ExpenseDetailModal({
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-500">Valor</label>
-              <p className="text-2xl font-bold text-green-600">
+              <label className="text-xs sm:text-sm font-medium text-gray-500">
+                Valor
+              </label>
+              <p className="text-xl sm:text-2xl font-bold text-green-600">
                 R$ {parseFloat(expense.amount).toFixed(2).replace(".", ",")}
               </p>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="text-xs sm:text-sm font-medium text-gray-500">
                 Categoria
               </label>
               <div className="mt-1">
                 <span
-                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                  className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium"
                   style={getCategoryBadgeStyles(expense.category.color)}
                 >
                   {expense.category.name}
@@ -155,10 +161,10 @@ export function ExpenseDetailModal({
 
             {expense.description && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="text-xs sm:text-sm font-medium text-gray-500">
                   Descrição
                 </label>
-                <div className="mt-1 max-h-32 overflow-y-auto bg-gray-50 rounded-md p-3 border">
+                <div className="mt-1 max-h-32 overflow-y-auto bg-gray-50 rounded-md p-2 sm:p-3 border">
                   <p className="text-gray-900 whitespace-pre-wrap break-words text-sm leading-relaxed">
                     {expense.description}
                   </p>
@@ -167,10 +173,10 @@ export function ExpenseDetailModal({
             )}
 
             <div>
-              <label className="text-sm font-medium text-gray-500">
+              <label className="text-xs sm:text-sm font-medium text-gray-500">
                 Criado em
               </label>
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 {new Date(expense.createdAt).toLocaleDateString("pt-BR", {
                   year: "numeric",
                   month: "short",
@@ -183,10 +189,10 @@ export function ExpenseDetailModal({
 
             {expense.updatedAt !== expense.createdAt && (
               <div>
-                <label className="text-sm font-medium text-gray-500">
+                <label className="text-xs sm:text-sm font-medium text-gray-500">
                   Última Atualização
                 </label>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs sm:text-sm text-gray-600">
                   {new Date(expense.updatedAt).toLocaleDateString("pt-BR", {
                     year: "numeric",
                     month: "short",
@@ -199,13 +205,13 @@ export function ExpenseDetailModal({
             )}
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:justify-between gap-3 pt-4 border-t">
-            <div className="flex space-x-2 flex-wrap">
+          <div className="flex flex-col gap-3 pt-4 border-t">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(expense)}
-                className="flex items-center space-x-1"
+                className="flex items-center justify-center space-x-1 w-full sm:w-auto"
               >
                 <Edit className="w-4 h-4" />
                 <span>Editar</span>
@@ -214,17 +220,13 @@ export function ExpenseDetailModal({
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDeleteDialog(true)}
-                className="text-red-600 hover:text-red-700 flex items-center space-x-1"
+                className="text-red-600 hover:text-red-700 flex items-center justify-center space-x-1 w-full sm:w-auto"
               >
                 <Trash2 className="w-4 h-4" />
                 <span>Excluir</span>
               </Button>
             </div>
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="sm:flex-shrink-0"
-            >
+            <Button variant="outline" onClick={onClose} className="w-full">
               Fechar
             </Button>
           </div>

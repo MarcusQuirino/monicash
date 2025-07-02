@@ -156,14 +156,14 @@ export function ExpenseDashboard() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header with Month Filter */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Painel de Gastos</h1>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Período:</span>
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header with Month Filter - Mobile Optimized */}
+      <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:justify-between sm:items-center">
+        <h1 className="text-xl sm:text-2xl font-bold">Painel de Gastos</h1>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:items-center sm:gap-2">
+          <span className="text-sm text-gray-600 sm:inline">Período:</span>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48">
               <SelectValue placeholder="Selecionar período" />
             </SelectTrigger>
             <SelectContent>
@@ -177,8 +177,8 @@ export function ExpenseDashboard() {
         </div>
       </div>
 
-      {/* Monthly Overview */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Monthly Overview - Mobile Optimized Grid */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <MonthlyTotal
           expenses={expenses}
           isAllTime={isAllTime}
@@ -195,7 +195,9 @@ export function ExpenseDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{expenses.length}</div>
+            <div className="text-xl sm:text-2xl font-bold">
+              {expenses.length}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -205,7 +207,7 @@ export function ExpenseDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-xl sm:text-2xl font-bold">
               {new Set(expenses.map((e) => e.categoryId)).size}
             </div>
           </CardContent>
@@ -217,24 +219,33 @@ export function ExpenseDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ {calculateAvgPerDay()}</div>
+            <div className="text-xl sm:text-2xl font-bold">
+              R$ {calculateAvgPerDay()}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">
+      {/* Action Buttons - Mobile Optimized */}
+      <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:justify-between sm:items-center">
+        <h2 className="text-lg sm:text-xl font-semibold">
           {isAllTime ? "Todos os Gastos" : "Gastos Recentes"}
         </h2>
-        <div className="flex gap-2">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
           {expenses.length > 0 && (
-            <Button variant="outline" onClick={handleExportToExcel}>
+            <Button
+              variant="outline"
+              onClick={handleExportToExcel}
+              className="w-full sm:w-auto"
+            >
               <Download className="w-4 h-4 mr-2" />
               Exportar Excel
             </Button>
           )}
-          <Button onClick={() => setShowAddForm(true)}>
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="w-full sm:w-auto"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Adicionar Gasto
           </Button>
