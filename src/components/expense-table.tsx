@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Expense } from "@/lib/types";
+import type { Transaction } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -11,7 +11,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Calendar, Tag, FileText } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Calendar,
+  Tag,
+  FileText,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,19 +33,22 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getCategoryBadgeStyles } from "@/lib/utils";
 
-type ExpenseTableProps = {
-  expenses: Expense[];
-  onEdit: (expense: Expense) => void;
-  onViewDetails: (expense: Expense) => void;
+type TransactionTableProps = {
+  transactions: Transaction[];
+  onEditExpense: (transaction: Transaction) => void;
+  onEditIncome: (transaction: Transaction) => void;
+  onViewDetails: (transaction: Transaction) => void;
 };
 
 export function ExpenseTable({
-  expenses,
-  onEdit,
+  transactions,
+  onEditExpense,
+  onEditIncome,
   onViewDetails,
-}: ExpenseTableProps) {
+}: TransactionTableProps) {
   const queryClient = useQueryClient();
-  const deleteMutation = useMutation({
+
+  const deleteExpenseMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/expenses/${id}`, {
         method: "DELETE",
@@ -50,8 +61,34 @@ export function ExpenseTable({
     },
   });
 
-  const handleDelete = (id: number) => {
-    deleteMutation.mutate(id);
+  const deleteIncomeMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/incomes/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Falha ao excluir entrada");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["incomes"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] }); // Refresh combined view
+    },
+  });
+
+  const handleDelete = (transaction: Transaction) => {
+    if (transaction.type === "expense") {
+      deleteExpenseMutation.mutate(transaction.id);
+    } else {
+      deleteIncomeMutation.mutate(transaction.id);
+    }
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    if (transaction.type === "expense") {
+      onEditExpense(transaction);
+    } else {
+      onEditIncome(transaction);
+    }
   };
 
   const truncateText = (text: string, maxLength: number = 50) => {
@@ -59,10 +96,10 @@ export function ExpenseTable({
     return text.substring(0, maxLength) + "...";
   };
 
-  if (expenses.length === 0) {
+  if (transactions.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        Nenhum gasto registrado para este período.
+        Nenhuma transação registrada para este período.
       </div>
     );
   }
@@ -71,22 +108,38 @@ export function ExpenseTable({
     <>
       {/* Mobile Card Layout */}
       <div className="block sm:hidden space-y-4">
-        {expenses.map((expense) => (
+        {transactions.map((transaction) => (
           <div
-            key={expense.id}
-            className="bg-white border rounded-lg p-4 cursor-pointer hover:bg-gray-50 active:bg-gray-100 transition-colors"
-            onClick={() => onViewDetails(expense)}
+            key={`${transaction.type}-${transaction.id}`}
+            className={`border rounded-lg p-4 cursor-pointer hover:opacity-90 active:opacity-80 transition-opacity ${
+              transaction.type === "income"
+                ? "bg-green-50 border-green-200"
+                : "bg-white border-gray-200"
+            }`}
+            onClick={() => onViewDetails(transaction)}
           >
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-2 mb-1">
                   <Calendar className="w-4 h-4 text-gray-500 flex-shrink-0" />
                   <span className="text-sm text-gray-600">
-                    {new Date(expense.date).toLocaleDateString("pt-BR")}
+                    {new Date(transaction.date).toLocaleDateString("pt-BR")}
                   </span>
+                  {transaction.type === "income" ? (
+                    <TrendingUp className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 text-red-600" />
+                  )}
                 </div>
-                <div className="text-lg font-bold text-green-600">
-                  R$ {parseFloat(expense.amount).toFixed(2).replace(".", ",")}
+                <div
+                  className={`text-lg font-bold ${
+                    transaction.type === "income"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {transaction.type === "income" ? "+" : "-"}R${" "}
+                  {parseFloat(transaction.amount).toFixed(2).replace(".", ",")}
                 </div>
               </div>
               <div
@@ -97,7 +150,7 @@ export function ExpenseTable({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => onEdit(expense)}
+                    onClick={() => handleEdit(transaction)}
                     className="h-8 w-8 p-0"
                   >
                     <Edit className="w-4 h-4" />
@@ -114,16 +167,20 @@ export function ExpenseTable({
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Excluir Gasto</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          Excluir{" "}
+                          {transaction.type === "income" ? "Entrada" : "Gasto"}
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                          Tem certeza que deseja excluir este gasto? Esta ação
-                          não pode ser desfeita.
+                          Tem certeza que deseja excluir esta{" "}
+                          {transaction.type === "income" ? "entrada" : "gasto"}?
+                          Esta ação não pode ser desfeita.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                         <AlertDialogAction
-                          onClick={() => handleDelete(expense.id)}
+                          onClick={() => handleDelete(transaction)}
                           className="bg-red-600 hover:bg-red-700"
                         >
                           Excluir
@@ -136,21 +193,23 @@ export function ExpenseTable({
             </div>
 
             <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Tag className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                <span
-                  className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                  style={getCategoryBadgeStyles(expense.category.color)}
-                >
-                  {expense.category.name}
-                </span>
-              </div>
+              {transaction.type === "expense" && transaction.category && (
+                <div className="flex items-center space-x-2">
+                  <Tag className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                  <span
+                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                    style={getCategoryBadgeStyles(transaction.category.color)}
+                  >
+                    {transaction.category.name}
+                  </span>
+                </div>
+              )}
 
-              {expense.description && (
+              {transaction.description && (
                 <div className="flex items-start space-x-2">
                   <FileText className="w-4 h-4 text-gray-500 flex-shrink-0 mt-0.5" />
                   <span className="text-sm text-gray-700 line-clamp-2">
-                    {truncateText(expense.description, 80)}
+                    {truncateText(transaction.description, 80)}
                   </span>
                 </div>
               )}
@@ -164,6 +223,7 @@ export function ExpenseTable({
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Tipo</TableHead>
               <TableHead>Data</TableHead>
               <TableHead>Descrição</TableHead>
               <TableHead>Categoria</TableHead>
@@ -172,40 +232,74 @@ export function ExpenseTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {expenses.map((expense) => (
+            {transactions.map((transaction) => (
               <TableRow
-                key={expense.id}
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => onViewDetails(expense)}
+                key={`${transaction.type}-${transaction.id}`}
+                className={`cursor-pointer hover:opacity-90 ${
+                  transaction.type === "income"
+                    ? "bg-green-50 hover:bg-green-100"
+                    : "hover:bg-gray-50"
+                }`}
+                onClick={() => onViewDetails(transaction)}
               >
                 <TableCell>
-                  {new Date(expense.date).toLocaleDateString("pt-BR")}
+                  <div className="flex items-center space-x-2">
+                    {transaction.type === "income" ? (
+                      <>
+                        <TrendingUp className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium text-green-600">
+                          Entrada
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <TrendingDown className="w-4 h-4 text-red-600" />
+                        <span className="text-sm font-medium text-red-600">
+                          Gasto
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {new Date(transaction.date).toLocaleDateString("pt-BR")}
                 </TableCell>
                 <TableCell
                   className="max-w-[200px]"
-                  title={expense.description || ""}
+                  title={transaction.description || ""}
                 >
-                  {expense.description
-                    ? truncateText(expense.description)
+                  {transaction.description
+                    ? truncateText(transaction.description)
                     : "-"}
                 </TableCell>
                 <TableCell>
-                  <span
-                    className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                    style={getCategoryBadgeStyles(expense.category.color)}
-                  >
-                    {expense.category.name}
-                  </span>
+                  {transaction.type === "expense" && transaction.category ? (
+                    <span
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                      style={getCategoryBadgeStyles(transaction.category.color)}
+                    >
+                      {transaction.category.name}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-500">-</span>
+                  )}
                 </TableCell>
-                <TableCell className="text-right font-medium">
-                  R$ {parseFloat(expense.amount).toFixed(2).replace(".", ",")}
+                <TableCell
+                  className={`text-right font-medium ${
+                    transaction.type === "income"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {transaction.type === "income" ? "+" : "-"}R${" "}
+                  {parseFloat(transaction.amount).toFixed(2).replace(".", ",")}
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => onEdit(expense)}
+                      onClick={() => handleEdit(transaction)}
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
@@ -221,16 +315,24 @@ export function ExpenseTable({
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Excluir Gasto</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            Excluir{" "}
+                            {transaction.type === "income"
+                              ? "Entrada"
+                              : "Gasto"}
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
-                            Tem certeza que deseja excluir este gasto? Esta ação
-                            não pode ser desfeita.
+                            Tem certeza que deseja excluir esta{" "}
+                            {transaction.type === "income"
+                              ? "entrada"
+                              : "gasto"}
+                            ? Esta ação não pode ser desfeita.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancelar</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => handleDelete(expense.id)}
+                            onClick={() => handleDelete(transaction)}
                             className="bg-red-600 hover:bg-red-700"
                           >
                             Excluir

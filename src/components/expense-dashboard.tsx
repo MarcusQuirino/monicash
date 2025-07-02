@@ -2,13 +2,14 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Expense, Category } from "@/lib/types";
+import type { Expense, Income, Category, Transaction } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, TrendingUp } from "lucide-react";
 import { ExpenseForm } from "./expense-form";
+import { IncomeForm } from "./income-form";
 import { ExpenseTable } from "./expense-table";
 import { ExpenseDetailModal } from "./expense-detail-modal";
-import { MonthlyTotal } from "./monthly-total";
+
 import { CategoryChart } from "./category-chart";
 import { useState } from "react";
 import {
@@ -18,12 +19,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { exportExpensesToExcel } from "@/lib/utils";
+import { exportTransactionsToExcel } from "@/lib/utils";
 
 export function ExpenseDashboard() {
-  const [showAddForm, setShowAddForm] = useState(false);
+  const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
+  const [showAddIncomeForm, setShowAddIncomeForm] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [viewingExpense, setViewingExpense] = useState<Expense | null>(null);
+  const [editingIncome, setEditingIncome] = useState<Income | null>(null);
+  const [viewingTransaction, setViewingTransaction] =
+    useState<Transaction | null>(null);
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
@@ -61,7 +65,9 @@ export function ExpenseDashboard() {
     ? [null, null]
     : selectedPeriod.split("-").map(Number);
 
-  const { data: expenses = [], isLoading } = useQuery<Expense[]>({
+  const { data: expenses = [], isLoading: isLoadingExpenses } = useQuery<
+    Expense[]
+  >({
     queryKey: ["expenses", selectedMonth, selectedYear, isAllTime],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -79,6 +85,26 @@ export function ExpenseDashboard() {
     },
   });
 
+  const { data: incomes = [], isLoading: isLoadingIncomes } = useQuery<
+    Income[]
+  >({
+    queryKey: ["incomes", selectedMonth, selectedYear, isAllTime],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (isAllTime) {
+        params.append("month", "all");
+        params.append("year", "all");
+      } else {
+        params.append("month", selectedMonth!.toString());
+        params.append("year", selectedYear!.toString());
+      }
+
+      const response = await fetch(`/api/incomes?${params.toString()}`);
+      if (!response.ok) throw new Error("Falha ao buscar entradas");
+      return response.json();
+    },
+  });
+
   const { data: categories = [] } = useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: async () => {
@@ -88,14 +114,43 @@ export function ExpenseDashboard() {
     },
   });
 
-  // Calculate stats based on selected period
-  const calculateAvgPerDay = () => {
-    if (expenses.length === 0) return "0";
+  const isLoading = isLoadingExpenses || isLoadingIncomes;
 
-    const totalAmount = expenses.reduce(
+  // Combine expenses and incomes into transactions
+  const transactions: Transaction[] = [
+    ...expenses.map(
+      (expense): Transaction => ({
+        ...expense,
+        type: "expense" as const,
+      })
+    ),
+    ...incomes.map(
+      (income): Transaction => ({
+        ...income,
+        type: "income" as const,
+      })
+    ),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  // Calculate stats based on selected period
+  const calculateStats = () => {
+    const totalExpenses = expenses.reduce(
       (sum: number, e: Expense) => sum + parseFloat(e.amount),
       0
     );
+    const totalIncome = incomes.reduce(
+      (sum: number, i: Income) => sum + parseFloat(i.amount),
+      0
+    );
+    const netAmount = totalIncome - totalExpenses;
+
+    return { totalExpenses, totalIncome, netAmount };
+  };
+
+  const { totalExpenses, totalIncome, netAmount } = calculateStats();
+
+  const calculateAvgPerDay = () => {
+    if (expenses.length === 0) return "0";
 
     if (isAllTime) {
       // For all time, calculate average per day based on the range of dates
@@ -106,37 +161,48 @@ export function ExpenseDashboard() {
         Math.ceil(
           (maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24)
         ) + 1;
-      return (totalAmount / daysDiff).toFixed(0);
+      return (totalExpenses / daysDiff).toFixed(0);
     } else {
       // For specific month, use days in that month
       const daysInMonth = new Date(selectedYear!, selectedMonth!, 0).getDate();
-      return (totalAmount / daysInMonth).toFixed(0);
+      return (totalExpenses / daysInMonth).toFixed(0);
     }
   };
 
-  const handleEditExpense = (expense: Expense) => {
-    setEditingExpense(expense);
-    setViewingExpense(null);
+  const handleEditExpense = (transaction: Transaction) => {
+    if (transaction.type === "expense") {
+      setEditingExpense(transaction as Expense);
+      setViewingTransaction(null);
+    }
   };
 
-  const handleCloseEditForm = () => {
+  const handleEditIncome = (transaction: Transaction) => {
+    if (transaction.type === "income") {
+      setEditingIncome(transaction as Income);
+      setViewingTransaction(null);
+    }
+  };
+
+  const handleCloseEditForms = () => {
     setEditingExpense(null);
+    setEditingIncome(null);
   };
 
   const handleEditSuccess = () => {
     setEditingExpense(null);
+    setEditingIncome(null);
   };
 
-  const handleViewDetails = (expense: Expense) => {
-    setViewingExpense(expense);
+  const handleViewDetails = (transaction: Transaction) => {
+    setViewingTransaction(transaction);
   };
 
   const handleCloseDetailModal = () => {
-    setViewingExpense(null);
+    setViewingTransaction(null);
   };
 
-  const handleNavigateExpense = (expense: Expense) => {
-    setViewingExpense(expense);
+  const handleNavigateTransaction = (transaction: Transaction) => {
+    setViewingTransaction(transaction);
   };
 
   const handleExportToExcel = () => {
@@ -144,7 +210,7 @@ export function ExpenseDashboard() {
       ? "Todos os Períodos"
       : monthOptions.find((opt) => opt.value === selectedPeriod)?.label;
 
-    exportExpensesToExcel(expenses, periodLabel);
+    exportTransactionsToExcel(expenses, incomes, periodLabel);
   };
 
   if (isLoading) {
@@ -159,7 +225,7 @@ export function ExpenseDashboard() {
     <div className="space-y-4 sm:space-y-6">
       {/* Header with Month Filter - Mobile Optimized */}
       <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:justify-between sm:items-center">
-        <h1 className="text-xl sm:text-2xl font-bold">Painel de Gastos</h1>
+        <h1 className="text-xl sm:text-2xl font-bold">Painel Financeiro</h1>
         <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:items-center sm:gap-2">
           <span className="text-sm text-gray-600 sm:inline">Período:</span>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
@@ -177,45 +243,53 @@ export function ExpenseDashboard() {
         </div>
       </div>
 
-      {/* Monthly Overview - Mobile Optimized Grid */}
+      {/* Financial Overview - Mobile Optimized Grid */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <MonthlyTotal
-          expenses={expenses}
-          isAllTime={isAllTime}
-          period={
-            isAllTime
-              ? undefined
-              : monthOptions.find((opt) => opt.value === selectedPeriod)?.label
-          }
-        />
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
-              Transações
+              Total de Gastos
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">
-              {expenses.length}
+            <div className="text-xl sm:text-2xl font-bold text-red-600">
+              R$ {totalExpenses.toFixed(2).replace(".", ",")}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
-              Categorias Usadas
+              Total de Entradas
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">
-              {new Set(expenses.map((e) => e.categoryId)).size}
+            <div className="text-xl sm:text-2xl font-bold text-green-600">
+              R$ {totalIncome.toFixed(2).replace(".", ",")}
             </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
-              Média por Dia
+              Saldo Líquido
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-xl sm:text-2xl font-bold ${
+                netAmount >= 0 ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {netAmount >= 0 ? "+" : ""}R${" "}
+              {Math.abs(netAmount).toFixed(2).replace(".", ",")}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Gasto Médio/Dia
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -229,10 +303,10 @@ export function ExpenseDashboard() {
       {/* Action Buttons - Mobile Optimized */}
       <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:justify-between sm:items-center">
         <h2 className="text-lg sm:text-xl font-semibold">
-          {isAllTime ? "Todos os Gastos" : "Gastos Recentes"}
+          {isAllTime ? "Todas as Transações" : "Transações Recentes"}
         </h2>
         <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
-          {expenses.length > 0 && (
+          {transactions.length > 0 && (
             <Button
               variant="outline"
               onClick={handleExportToExcel}
@@ -243,16 +317,25 @@ export function ExpenseDashboard() {
             </Button>
           )}
           <Button
-            onClick={() => setShowAddForm(true)}
-            className="w-full sm:w-auto"
+            onClick={() => setShowAddIncomeForm(true)}
+            variant="outline"
+            className="w-full sm:w-auto border-green-200 text-green-700 hover:bg-green-50"
+          >
+            <TrendingUp className="w-4 h-4 mr-2" />
+            Nova Entrada
+          </Button>
+          <Button
+            onClick={() => setShowAddExpenseForm(true)}
+            variant="outline"
+            className="w-full sm:w-auto border-red-200 text-red-700 hover:bg-red-50"
           >
             <Plus className="w-4 h-4 mr-2" />
-            Adicionar Gasto
+            Novo Gasto
           </Button>
         </div>
       </div>
 
-      {/* Category Chart */}
+      {/* Category Chart - Only show for expenses */}
       {expenses.length > 0 && (
         <Card>
           <CardHeader>
@@ -264,12 +347,12 @@ export function ExpenseDashboard() {
         </Card>
       )}
 
-      {/* Expense Table */}
+      {/* Transaction Table */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Lista de Gastos</CardTitle>
-            {expenses.length > 0 && (
+            <CardTitle>Lista de Transações</CardTitle>
+            {transactions.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleExportToExcel}>
                 <Download className="w-4 h-4 mr-2" />
                 Exportar Excel
@@ -279,19 +362,28 @@ export function ExpenseDashboard() {
         </CardHeader>
         <CardContent>
           <ExpenseTable
-            expenses={expenses}
-            onEdit={handleEditExpense}
+            transactions={transactions}
+            onEditExpense={handleEditExpense}
+            onEditIncome={handleEditIncome}
             onViewDetails={handleViewDetails}
           />
         </CardContent>
       </Card>
 
       {/* Add Expense Form */}
-      {showAddForm && (
+      {showAddExpenseForm && (
         <ExpenseForm
           categories={categories}
-          onClose={() => setShowAddForm(false)}
-          onSuccess={() => setShowAddForm(false)}
+          onClose={() => setShowAddExpenseForm(false)}
+          onSuccess={() => setShowAddExpenseForm(false)}
+        />
+      )}
+
+      {/* Add Income Form */}
+      {showAddIncomeForm && (
+        <IncomeForm
+          onClose={() => setShowAddIncomeForm(false)}
+          onSuccess={() => setShowAddIncomeForm(false)}
         />
       )}
 
@@ -300,19 +392,32 @@ export function ExpenseDashboard() {
         <ExpenseForm
           categories={categories}
           expense={editingExpense}
-          onClose={handleCloseEditForm}
+          onClose={handleCloseEditForms}
           onSuccess={handleEditSuccess}
         />
       )}
 
-      {/* Expense Detail Modal */}
-      {viewingExpense && (
+      {/* Edit Income Form */}
+      {editingIncome && (
+        <IncomeForm
+          income={editingIncome}
+          onClose={handleCloseEditForms}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {/* Transaction Detail Modal - Only for expenses for now */}
+      {viewingTransaction && viewingTransaction.type === "expense" && (
         <ExpenseDetailModal
-          expense={viewingExpense}
+          expense={viewingTransaction as Expense}
           expenses={expenses}
           onClose={handleCloseDetailModal}
-          onEdit={handleEditExpense}
-          onNavigate={handleNavigateExpense}
+          onEdit={(expense: Expense) =>
+            handleEditExpense({ ...expense, type: "expense" as const })
+          }
+          onNavigate={(expense: Expense) =>
+            handleNavigateTransaction({ ...expense, type: "expense" as const })
+          }
         />
       )}
     </div>
