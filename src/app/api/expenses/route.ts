@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/db'
+import prisma, { withRetry } from '@/lib/db'
 import { expenseSchema } from '@/lib/validations'
 
 export async function GET(request: NextRequest) {
@@ -32,13 +32,15 @@ export async function GET(request: NextRequest) {
             where.categoryId = parseInt(categoryId)
         }
 
-        const expenses = await prisma.expense.findMany({
-            where,
-            include: {
-                category: true
-            },
-            orderBy: { date: 'desc' }
-        })
+        const expenses = await withRetry(() =>
+            prisma.expense.findMany({
+                where,
+                include: {
+                    category: true
+                },
+                orderBy: { date: 'desc' }
+            })
+        )
 
         return NextResponse.json(expenses)
     } catch (error) {
@@ -55,17 +57,19 @@ export async function POST(request: NextRequest) {
         const body = await request.json()
         const validatedData = expenseSchema.parse(body)
 
-        const expense = await prisma.expense.create({
-            data: {
-                date: new Date(validatedData.date),
-                description: validatedData.description,
-                amount: parseFloat(validatedData.amount),
-                categoryId: parseInt(validatedData.categoryId)
-            },
-            include: {
-                category: true
-            }
-        })
+        const expense = await withRetry(() =>
+            prisma.expense.create({
+                data: {
+                    date: new Date(validatedData.date),
+                    description: validatedData.description,
+                    amount: parseFloat(validatedData.amount),
+                    categoryId: parseInt(validatedData.categoryId)
+                },
+                include: {
+                    category: true
+                }
+            })
+        )
 
         return NextResponse.json(expense, { status: 201 })
     } catch (error) {
