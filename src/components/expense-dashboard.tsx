@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Expense, Category } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Download } from "lucide-react";
 import { ExpenseForm } from "./expense-form";
 import { ExpenseTable } from "./expense-table";
 import { ExpenseDetailModal } from "./expense-detail-modal";
@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { exportExpensesToExcel } from "@/lib/utils";
 
 export function ExpenseDashboard() {
   const [showAddForm, setShowAddForm] = useState(false);
@@ -138,6 +139,14 @@ export function ExpenseDashboard() {
     setViewingExpense(expense);
   };
 
+  const handleExportToExcel = () => {
+    const periodLabel = isAllTime
+      ? "Todos os Períodos"
+      : monthOptions.find((opt) => opt.value === selectedPeriod)?.label;
+
+    exportExpensesToExcel(expenses, periodLabel);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -213,15 +222,23 @@ export function ExpenseDashboard() {
         </Card>
       </div>
 
-      {/* Action Button */}
+      {/* Action Buttons */}
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">
           {isAllTime ? "Todos os Gastos" : "Gastos Recentes"}
         </h2>
-        <Button onClick={() => setShowAddForm(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Adicionar Gasto
-        </Button>
+        <div className="flex gap-2">
+          {expenses.length > 0 && (
+            <Button variant="outline" onClick={handleExportToExcel}>
+              <Download className="w-4 h-4 mr-2" />
+              Exportar Excel
+            </Button>
+          )}
+          <Button onClick={() => setShowAddForm(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Gasto
+          </Button>
+        </div>
       </div>
 
       {/* Category Chart */}
@@ -239,7 +256,15 @@ export function ExpenseDashboard() {
       {/* Expense Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Gastos</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Lista de Gastos</CardTitle>
+            {expenses.length > 0 && (
+              <Button variant="outline" size="sm" onClick={handleExportToExcel}>
+                <Download className="w-4 h-4 mr-2" />
+                Exportar Excel
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <ExpenseTable

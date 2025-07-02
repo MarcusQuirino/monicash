@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import * as XLSX from "xlsx"
+import type { Expense } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -39,4 +41,83 @@ export function getCategoryBadgeStyles(color?: string) {
     backgroundColor: `${color}30`, // Slightly more opaque background (30% instead of 20%)
     color: darkenColor(color, 0.4), // Darker text for better contrast
   };
+}
+
+export function exportExpensesToExcel(expenses: Expense[], periodLabel?: string) {
+  // Prepare data for Excel export
+  const excelData = expenses.map((expense) => ({
+    Data: new Date(expense.date).toLocaleDateString("pt-BR"),
+    Descrição: expense.description || "",
+    Categoria: expense.category.name,
+    Valor: `R$ ${parseFloat(expense.amount).toFixed(2).replace(".", ",")}`,
+    "Valor Numérico": parseFloat(expense.amount),
+    "Criado em": new Date(expense.createdAt).toLocaleDateString("pt-BR"),
+  }));
+
+  // Add summary row
+  const totalAmount = expenses.reduce(
+    (sum, expense) => sum + parseFloat(expense.amount),
+    0
+  );
+
+  excelData.push({
+    Data: "",
+    Descrição: "",
+    Categoria: "TOTAL:",
+    Valor: `R$ ${totalAmount.toFixed(2).replace(".", ",")}`,
+    "Valor Numérico": totalAmount,
+    "Criado em": "",
+  });
+
+  // Create workbook and worksheet
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+
+  // Style the header row
+  const headerRange = XLSX.utils.decode_range(worksheet["!ref"] || "A1");
+  for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+    if (worksheet[cellAddress]) {
+      worksheet[cellAddress].s = {
+        font: { bold: true },
+        fill: { fgColor: { rgb: "EEEEEE" } },
+      };
+    }
+  }
+
+  // Style the total row
+  const totalRowIndex = excelData.length - 1;
+  for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: totalRowIndex + 1, c: col });
+    if (worksheet[cellAddress]) {
+      worksheet[cellAddress].s = {
+        font: { bold: true },
+        fill: { fgColor: { rgb: "DDDDDD" } },
+      };
+    }
+  }
+
+  // Set column widths
+  worksheet["!cols"] = [
+    { width: 12 }, // Data
+    { width: 30 }, // Descrição
+    { width: 15 }, // Categoria
+    { width: 15 }, // Valor
+    { width: 15 }, // Valor Numérico
+    { width: 15 }, // Criado em
+  ];
+
+  // Add worksheet to workbook
+  const sheetName = periodLabel ? `Gastos - ${periodLabel}` : "Gastos";
+  XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+
+  // Generate filename with current date and period
+  const now = new Date();
+  const dateStr = now.toISOString().split("T")[0];
+  const filename = periodLabel
+    ? `gastos_${periodLabel.replace(/\s+/g, "_")}_${dateStr}.xlsx`
+    : `gastos_${dateStr}.xlsx`;
+
+  // Write and download file
+  XLSX.writeFile(workbook, filename);
 }
