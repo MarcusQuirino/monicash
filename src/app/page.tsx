@@ -1,23 +1,23 @@
-import { Suspense } from "react";
-import { ExpenseDashboard } from "@/components/expense-dashboard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Suspense } from 'react';
+import { ExpenseDashboard } from '@/components/expense-dashboard';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+      <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-8">
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
             Monicash
           </h1>
-          <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
+          <p className="mt-1 text-sm text-gray-600 sm:mt-2 sm:text-base">
             Controle de Gastos Pessoais
           </p>
         </div>
 
         <Suspense
           fallback={
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
               {[...Array(4)].map((_, i) => (
                 <Card key={i}>
                   <CardHeader className="pb-2">
@@ -26,7 +26,7 @@ export default function HomePage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-6 sm:h-8 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-6 animate-pulse rounded bg-gray-200 sm:h-8"></div>
                   </CardContent>
                 </Card>
               ))}

@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import type { Expense } from "@/lib/types";
+import { useState } from 'react';
+import type { Expense } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Edit, Trash2 } from "lucide-react";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight, Edit, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,9 +19,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCategoryBadgeStyles } from "@/lib/utils";
+} from '@/components/ui/alert-dialog';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { getCategoryBadgeStyles } from '@/lib/utils';
 
 type ExpenseDetailModalProps = {
   expense: Expense | null;
@@ -44,13 +44,13 @@ export function ExpenseDetailModal({
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await fetch(`/api/expenses/${id}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
-      if (!response.ok) throw new Error("Falha ao excluir gasto");
+      if (!response.ok) throw new Error('Falha ao excluir gasto');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
       onClose();
     },
   });
@@ -89,13 +89,13 @@ export function ExpenseDetailModal({
   return (
     <>
       <Dialog open={!!expense} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg max-w-[95vw] max-h-[90vh] overflow-hidden">
+        <DialogContent className="max-h-[90vh] max-w-[95vw] overflow-hidden sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between pr-8">
               <span className="truncate text-base sm:text-lg">
                 Detalhes do Gasto
               </span>
-              <div className="flex items-center space-x-1 flex-shrink-0">
+              <div className="flex flex-shrink-0 items-center space-x-1">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -103,9 +103,9 @@ export function ExpenseDetailModal({
                   disabled={!hasPrevious}
                   className="h-8 w-8 p-0"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-xs sm:text-sm text-gray-500 px-2 whitespace-nowrap">
+                <span className="whitespace-nowrap px-2 text-xs text-gray-500 sm:text-sm">
                   {currentIndex + 1} de {sortedExpenses.length}
                 </span>
                 <Button
@@ -115,43 +115,43 @@ export function ExpenseDetailModal({
                   disabled={!hasNext}
                   className="h-8 w-8 p-0"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-4 overflow-y-auto flex-1 min-h-0 px-1">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-1">
             <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-500">
+              <label className="text-xs font-medium text-gray-500 sm:text-sm">
                 Data
               </label>
               <p className="text-base sm:text-lg">
-                {new Date(expense.date).toLocaleDateString("pt-BR", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
+                {new Date(expense.date).toLocaleDateString('pt-BR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
                 })}
               </p>
             </div>
 
             <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-500">
+              <label className="text-xs font-medium text-gray-500 sm:text-sm">
                 Valor
               </label>
-              <p className="text-xl sm:text-2xl font-bold text-green-600">
-                R$ {parseFloat(expense.amount).toFixed(2).replace(".", ",")}
+              <p className="text-xl font-bold text-green-600 sm:text-2xl">
+                R$ {parseFloat(expense.amount).toFixed(2).replace('.', ',')}
               </p>
             </div>
 
             <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-500">
+              <label className="text-xs font-medium text-gray-500 sm:text-sm">
                 Categoria
               </label>
               <div className="mt-1">
                 <span
-                  className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium"
+                  className="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium sm:px-3 sm:text-sm"
                   style={getCategoryBadgeStyles(expense.category.color)}
                 >
                   {expense.category.name}
@@ -161,11 +161,11 @@ export function ExpenseDetailModal({
 
             {expense.description && (
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-500">
+                <label className="text-xs font-medium text-gray-500 sm:text-sm">
                   Descrição
                 </label>
-                <div className="mt-1 max-h-32 overflow-y-auto bg-gray-50 rounded-md p-2 sm:p-3 border">
-                  <p className="text-gray-900 whitespace-pre-wrap break-words text-sm leading-relaxed">
+                <div className="mt-1 max-h-32 overflow-y-auto rounded-md border bg-gray-50 p-2 sm:p-3">
+                  <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-gray-900">
                     {expense.description}
                   </p>
                 </div>
@@ -173,56 +173,56 @@ export function ExpenseDetailModal({
             )}
 
             <div>
-              <label className="text-xs sm:text-sm font-medium text-gray-500">
+              <label className="text-xs font-medium text-gray-500 sm:text-sm">
                 Criado em
               </label>
-              <p className="text-xs sm:text-sm text-gray-600">
-                {new Date(expense.createdAt).toLocaleDateString("pt-BR", {
-                  year: "numeric",
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
+              <p className="text-xs text-gray-600 sm:text-sm">
+                {new Date(expense.createdAt).toLocaleDateString('pt-BR', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
                 })}
               </p>
             </div>
 
             {expense.updatedAt !== expense.createdAt && (
               <div>
-                <label className="text-xs sm:text-sm font-medium text-gray-500">
+                <label className="text-xs font-medium text-gray-500 sm:text-sm">
                   Última Atualização
                 </label>
-                <p className="text-xs sm:text-sm text-gray-600">
-                  {new Date(expense.updatedAt).toLocaleDateString("pt-BR", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
+                <p className="text-xs text-gray-600 sm:text-sm">
+                  {new Date(expense.updatedAt).toLocaleDateString('pt-BR', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
                   })}
                 </p>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-3 pt-4 border-t">
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+          <div className="flex flex-col gap-3 border-t pt-4">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(expense)}
-                className="flex items-center justify-center space-x-1 w-full sm:w-auto"
+                className="flex w-full items-center justify-center space-x-1 sm:w-auto"
               >
-                <Edit className="w-4 h-4" />
+                <Edit className="h-4 w-4" />
                 <span>Editar</span>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowDeleteDialog(true)}
-                className="text-red-600 hover:text-red-700 flex items-center justify-center space-x-1 w-full sm:w-auto"
+                className="flex w-full items-center justify-center space-x-1 text-red-600 hover:text-red-700 sm:w-auto"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="h-4 w-4" />
                 <span>Excluir</span>
               </Button>
             </div>

@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { incomeSchema, type IncomeFormData } from "@/lib/validations";
-import type { Income } from "@/lib/types";
+import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { incomeSchema, type IncomeFormData } from '@/lib/validations';
+import type { Income } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -19,10 +19,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 type IncomeFormProps = {
   income?: Income;
@@ -38,29 +38,29 @@ export function IncomeForm({ income, onClose, onSuccess }: IncomeFormProps) {
   const form = useForm<IncomeFormData>({
     resolver: zodResolver(incomeSchema),
     defaultValues: {
-      date: income?.date || new Date().toISOString().split("T")[0],
-      description: income?.description || "",
-      amount: income?.amount || "",
+      date: income?.date || new Date().toISOString().split('T')[0],
+      description: income?.description || '',
+      amount: income?.amount || '',
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (data: IncomeFormData) => {
-      const url = isEditing ? `/api/incomes/${income.id}` : "/api/incomes";
-      const method = isEditing ? "PUT" : "POST";
+      const url = isEditing ? `/api/incomes/${income.id}` : '/api/incomes';
+      const method = isEditing ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Falha ao salvar entrada");
+      if (!response.ok) throw new Error('Falha ao salvar entrada');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["incomes"] });
-      queryClient.invalidateQueries({ queryKey: ["expenses"] }); // Invalidate expenses to refresh combined view
+      queryClient.invalidateQueries({ queryKey: ['incomes'] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] }); // Invalidate expenses to refresh combined view
       onSuccess();
     },
   });
@@ -79,7 +79,7 @@ export function IncomeForm({ income, onClose, onSuccess }: IncomeFormProps) {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? "Editar Entrada" : "Nova Entrada"}
+            {isEditing ? 'Editar Entrada' : 'Nova Entrada'}
           </DialogTitle>
         </DialogHeader>
 
@@ -142,7 +142,7 @@ export function IncomeForm({ income, onClose, onSuccess }: IncomeFormProps) {
                 Cancelar
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Salvando..." : isEditing ? "Atualizar" : "Salvar"}
+                {isLoading ? 'Salvando...' : isEditing ? 'Atualizar' : 'Salvar'}
               </Button>
             </div>
           </form>

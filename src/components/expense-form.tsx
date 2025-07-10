@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { expenseSchema, type ExpenseFormData } from "@/lib/validations";
-import type { Expense } from "@/lib/types";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { expenseSchema, type ExpenseFormData } from '@/lib/validations';
+import type { Expense } from '@/lib/types';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -19,17 +19,17 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select';
 
 type Category = {
   id: number;
@@ -58,35 +58,35 @@ export function ExpenseForm({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
       date: expense
-        ? new Date(expense.date).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0],
-      description: expense?.description || "",
-      categoryId: expense?.categoryId.toString() || "",
-      amount: expense?.amount || "",
+        ? new Date(expense.date).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0],
+      description: expense?.description || '',
+      categoryId: expense?.categoryId.toString() || '',
+      amount: expense?.amount || '',
     },
   });
 
   const mutation = useMutation({
     mutationFn: async (data: ExpenseFormData) => {
-      const url = isEditing ? `/api/expenses/${expense.id}` : "/api/expenses";
-      const method = isEditing ? "PUT" : "POST";
+      const url = isEditing ? `/api/expenses/${expense.id}` : '/api/expenses';
+      const method = isEditing ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
       if (!response.ok) {
         throw new Error(
-          isEditing ? "Falha ao atualizar gasto" : "Falha ao criar gasto"
+          isEditing ? 'Falha ao atualizar gasto' : 'Falha ao criar gasto'
         );
       }
 
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      queryClient.invalidateQueries({ queryKey: ['expenses'] });
       onSuccess();
     },
   });
@@ -96,7 +96,7 @@ export function ExpenseForm({
     try {
       await mutation.mutateAsync(data);
     } catch (error) {
-      console.error("Erro ao enviar formulário:", error);
+      console.error('Erro ao enviar formulário:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -104,10 +104,10 @@ export function ExpenseForm({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md max-w-[95vw] max-h-[90vh]">
+      <DialogContent className="max-h-[90vh] max-w-[95vw] sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl">
-            {isEditing ? "Editar Gasto" : "Adicionar Novo Gasto"}
+            {isEditing ? 'Editar Gasto' : 'Adicionar Novo Gasto'}
           </DialogTitle>
         </DialogHeader>
 
@@ -140,7 +140,7 @@ export function ExpenseForm({
                       placeholder="No que você gastou?"
                       {...field}
                       rows={3}
-                      className="text-base resize-none"
+                      className="resize-none text-base"
                     />
                   </FormControl>
                   <FormMessage />
@@ -200,27 +200,27 @@ export function ExpenseForm({
               )}
             />
 
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:justify-end sm:space-x-2 pt-4">
+            <div className="flex flex-col space-y-2 pt-4 sm:flex-row sm:justify-end sm:space-x-2 sm:space-y-0">
               <Button
                 type="button"
                 variant="outline"
                 onClick={onClose}
-                className="w-full sm:w-auto order-2 sm:order-1"
+                className="order-2 w-full sm:order-1 sm:w-auto"
               >
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto order-1 sm:order-2"
+                className="order-1 w-full sm:order-2 sm:w-auto"
               >
                 {isSubmitting
                   ? isEditing
-                    ? "Atualizando..."
-                    : "Adicionando..."
+                    ? 'Atualizando...'
+                    : 'Adicionando...'
                   : isEditing
-                  ? "Atualizar Gasto"
-                  : "Adicionar Gasto"}
+                    ? 'Atualizar Gasto'
+                    : 'Adicionar Gasto'}
               </Button>
             </div>
           </form>

@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Providers } from "@/components/providers";
-import { AuthGuard } from "@/components/auth-guard";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import './globals.css';
+import { Providers } from '@/components/providers';
+import { AuthGuard } from '@/components/auth-guard';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
-  title: "Monicash - Controle de Gastos Pessoais",
-  description: "Controle seus gastos pessoais com categorização e análises",
+  title: 'Monicash - Controle de Gastos Pessoais',
+  description: 'Controle seus gastos pessoais com categorização e análises',
 };
 
 export default function RootLayout({

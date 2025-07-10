@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Expense, Income, Category, Transaction } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Plus, Download, TrendingUp } from "lucide-react";
-import { ExpenseForm } from "./expense-form";
-import { IncomeForm } from "./income-form";
-import { ExpenseTable } from "./expense-table";
-import { ExpenseDetailModal } from "./expense-detail-modal";
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Expense, Income, Category, Transaction } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Plus, Download, TrendingUp } from 'lucide-react';
+import { ExpenseForm } from './expense-form';
+import { IncomeForm } from './income-form';
+import { ExpenseTable } from './expense-table';
+import { ExpenseDetailModal } from './expense-detail-modal';
 
-import { CategoryChart } from "./category-chart";
-import { useState } from "react";
+import { CategoryChart } from './category-chart';
+import { useState } from 'react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { exportTransactionsToExcel } from "@/lib/utils";
+} from '@/components/ui/select';
+import { exportTransactionsToExcel } from '@/lib/utils';
 
 export function ExpenseDashboard() {
   const [showAddExpenseForm, setShowAddExpenseForm] = useState(false);
@@ -34,22 +34,22 @@ export function ExpenseDashboard() {
 
   // State for month/year filter
   const [selectedPeriod, setSelectedPeriod] = useState(
-    `${currentYear}-${currentMonth.toString().padStart(2, "0")}`
+    `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
   );
 
   // Generate month options for the last 12 months plus current month
   const generateMonthOptions = () => {
-    const options = [{ value: "all", label: "Todos os Períodos" }];
+    const options = [{ value: 'all', label: 'Todos os Períodos' }];
     const now = new Date();
 
     for (let i = 0; i < 12; i++) {
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const year = date.getFullYear();
       const month = date.getMonth() + 1;
-      const value = `${year}-${month.toString().padStart(2, "0")}`;
-      const label = date.toLocaleDateString("pt-BR", {
-        year: "numeric",
-        month: "long",
+      const value = `${year}-${month.toString().padStart(2, '0')}`;
+      const label = date.toLocaleDateString('pt-BR', {
+        year: 'numeric',
+        month: 'long',
       });
       options.push({ value, label });
     }
@@ -60,27 +60,27 @@ export function ExpenseDashboard() {
   const monthOptions = generateMonthOptions();
 
   // Parse selected period
-  const isAllTime = selectedPeriod === "all";
+  const isAllTime = selectedPeriod === 'all';
   const [selectedYear, selectedMonth] = isAllTime
     ? [null, null]
-    : selectedPeriod.split("-").map(Number);
+    : selectedPeriod.split('-').map(Number);
 
   const { data: expenses = [], isLoading: isLoadingExpenses } = useQuery<
     Expense[]
   >({
-    queryKey: ["expenses", selectedMonth, selectedYear, isAllTime],
+    queryKey: ['expenses', selectedMonth, selectedYear, isAllTime],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (isAllTime) {
-        params.append("month", "all");
-        params.append("year", "all");
+        params.append('month', 'all');
+        params.append('year', 'all');
       } else {
-        params.append("month", selectedMonth!.toString());
-        params.append("year", selectedYear!.toString());
+        params.append('month', selectedMonth!.toString());
+        params.append('year', selectedYear!.toString());
       }
 
       const response = await fetch(`/api/expenses?${params.toString()}`);
-      if (!response.ok) throw new Error("Falha ao buscar gastos");
+      if (!response.ok) throw new Error('Falha ao buscar gastos');
       return response.json();
     },
   });
@@ -88,28 +88,28 @@ export function ExpenseDashboard() {
   const { data: incomes = [], isLoading: isLoadingIncomes } = useQuery<
     Income[]
   >({
-    queryKey: ["incomes", selectedMonth, selectedYear, isAllTime],
+    queryKey: ['incomes', selectedMonth, selectedYear, isAllTime],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (isAllTime) {
-        params.append("month", "all");
-        params.append("year", "all");
+        params.append('month', 'all');
+        params.append('year', 'all');
       } else {
-        params.append("month", selectedMonth!.toString());
-        params.append("year", selectedYear!.toString());
+        params.append('month', selectedMonth!.toString());
+        params.append('year', selectedYear!.toString());
       }
 
       const response = await fetch(`/api/incomes?${params.toString()}`);
-      if (!response.ok) throw new Error("Falha ao buscar entradas");
+      if (!response.ok) throw new Error('Falha ao buscar entradas');
       return response.json();
     },
   });
 
   const { data: categories = [] } = useQuery<Category[]>({
-    queryKey: ["categories"],
+    queryKey: ['categories'],
     queryFn: async () => {
-      const response = await fetch("/api/categories");
-      if (!response.ok) throw new Error("Falha ao buscar categorias");
+      const response = await fetch('/api/categories');
+      if (!response.ok) throw new Error('Falha ao buscar categorias');
       return response.json();
     },
   });
@@ -121,13 +121,13 @@ export function ExpenseDashboard() {
     ...expenses.map(
       (expense): Transaction => ({
         ...expense,
-        type: "expense" as const,
+        type: 'expense' as const,
       })
     ),
     ...incomes.map(
       (income): Transaction => ({
         ...income,
-        type: "income" as const,
+        type: 'income' as const,
       })
     ),
   ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -150,7 +150,7 @@ export function ExpenseDashboard() {
   const { totalExpenses, totalIncome, netAmount } = calculateStats();
 
   const calculateAvgPerDay = () => {
-    if (expenses.length === 0) return "0";
+    if (expenses.length === 0) return '0';
 
     if (isAllTime) {
       // For all time, calculate average per day based on the range of dates
@@ -170,14 +170,14 @@ export function ExpenseDashboard() {
   };
 
   const handleEditExpense = (transaction: Transaction) => {
-    if (transaction.type === "expense") {
+    if (transaction.type === 'expense') {
       setEditingExpense(transaction as Expense);
       setViewingTransaction(null);
     }
   };
 
   const handleEditIncome = (transaction: Transaction) => {
-    if (transaction.type === "income") {
+    if (transaction.type === 'income') {
       setEditingIncome(transaction as Income);
       setViewingTransaction(null);
     }
@@ -207,7 +207,7 @@ export function ExpenseDashboard() {
 
   const handleExportToExcel = () => {
     const periodLabel = isAllTime
-      ? "Todos os Períodos"
+      ? 'Todos os Períodos'
       : monthOptions.find((opt) => opt.value === selectedPeriod)?.label;
 
     exportTransactionsToExcel(expenses, incomes, periodLabel);
@@ -215,7 +215,7 @@ export function ExpenseDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-lg text-gray-600">Carregando...</div>
       </div>
     );
@@ -224,9 +224,9 @@ export function ExpenseDashboard() {
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Header with Month Filter - Mobile Optimized */}
-      <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:justify-between sm:items-center">
-        <h1 className="text-xl sm:text-2xl font-bold">Painel Financeiro</h1>
-        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:items-center sm:gap-2">
+      <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <h1 className="text-xl font-bold sm:text-2xl">Painel Financeiro</h1>
+        <div className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:gap-2 sm:space-y-0">
           <span className="text-sm text-gray-600 sm:inline">Período:</span>
           <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
             <SelectTrigger className="w-full sm:w-48">
@@ -244,7 +244,7 @@ export function ExpenseDashboard() {
       </div>
 
       {/* Financial Overview - Mobile Optimized Grid */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-gray-500">
@@ -252,8 +252,8 @@ export function ExpenseDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-red-600">
-              R$ {totalExpenses.toFixed(2).replace(".", ",")}
+            <div className="text-xl font-bold text-red-600 sm:text-2xl">
+              R$ {totalExpenses.toFixed(2).replace('.', ',')}
             </div>
           </CardContent>
         </Card>
@@ -264,8 +264,8 @@ export function ExpenseDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-green-600">
-              R$ {totalIncome.toFixed(2).replace(".", ",")}
+            <div className="text-xl font-bold text-green-600 sm:text-2xl">
+              R$ {totalIncome.toFixed(2).replace('.', ',')}
             </div>
           </CardContent>
         </Card>
@@ -277,12 +277,12 @@ export function ExpenseDashboard() {
           </CardHeader>
           <CardContent>
             <div
-              className={`text-xl sm:text-2xl font-bold ${
-                netAmount >= 0 ? "text-green-600" : "text-red-600"
+              className={`text-xl font-bold sm:text-2xl ${
+                netAmount >= 0 ? 'text-green-600' : 'text-red-600'
               }`}
             >
-              {netAmount >= 0 ? "+" : ""}R${" "}
-              {Math.abs(netAmount).toFixed(2).replace(".", ",")}
+              {netAmount >= 0 ? '+' : ''}R${' '}
+              {Math.abs(netAmount).toFixed(2).replace('.', ',')}
             </div>
           </CardContent>
         </Card>
@@ -293,7 +293,7 @@ export function ExpenseDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">
+            <div className="text-xl font-bold sm:text-2xl">
               R$ {calculateAvgPerDay()}
             </div>
           </CardContent>
@@ -301,35 +301,35 @@ export function ExpenseDashboard() {
       </div>
 
       {/* Action Buttons - Mobile Optimized */}
-      <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:justify-between sm:items-center">
-        <h2 className="text-lg sm:text-xl font-semibold">
-          {isAllTime ? "Todas as Transações" : "Transações Recentes"}
+      <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <h2 className="text-lg font-semibold sm:text-xl">
+          {isAllTime ? 'Todas as Transações' : 'Transações Recentes'}
         </h2>
-        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:gap-2">
+        <div className="flex flex-col space-y-2 sm:flex-row sm:gap-2 sm:space-y-0">
           {transactions.length > 0 && (
             <Button
               variant="outline"
               onClick={handleExportToExcel}
               className="w-full sm:w-auto"
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="mr-2 h-4 w-4" />
               Exportar Excel
             </Button>
           )}
           <Button
             onClick={() => setShowAddIncomeForm(true)}
             variant="outline"
-            className="w-full sm:w-auto border-green-200 text-green-700 hover:bg-green-50"
+            className="w-full border-green-200 text-green-700 hover:bg-green-50 sm:w-auto"
           >
-            <TrendingUp className="w-4 h-4 mr-2" />
+            <TrendingUp className="mr-2 h-4 w-4" />
             Nova Entrada
           </Button>
           <Button
             onClick={() => setShowAddExpenseForm(true)}
             variant="outline"
-            className="w-full sm:w-auto border-red-200 text-red-700 hover:bg-red-50"
+            className="w-full border-red-200 text-red-700 hover:bg-red-50 sm:w-auto"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Novo Gasto
           </Button>
         </div>
@@ -350,11 +350,11 @@ export function ExpenseDashboard() {
       {/* Transaction Table */}
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <CardTitle>Lista de Transações</CardTitle>
             {transactions.length > 0 && (
               <Button variant="outline" size="sm" onClick={handleExportToExcel}>
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="mr-2 h-4 w-4" />
                 Exportar Excel
               </Button>
             )}
@@ -407,16 +407,16 @@ export function ExpenseDashboard() {
       )}
 
       {/* Transaction Detail Modal - Only for expenses for now */}
-      {viewingTransaction && viewingTransaction.type === "expense" && (
+      {viewingTransaction && viewingTransaction.type === 'expense' && (
         <ExpenseDetailModal
           expense={viewingTransaction as Expense}
           expenses={expenses}
           onClose={handleCloseDetailModal}
           onEdit={(expense: Expense) =>
-            handleEditExpense({ ...expense, type: "expense" as const })
+            handleEditExpense({ ...expense, type: 'expense' as const })
           }
           onNavigate={(expense: Expense) =>
-            handleNavigateTransaction({ ...expense, type: "expense" as const })
+            handleNavigateTransaction({ ...expense, type: 'expense' as const })
           }
         />
       )}
