@@ -1,214 +1,161 @@
 # Monicash 💰
 
-Um aplicativo moderno de controle de gastos pessoais construído com Next.js 15, TypeScript, Prisma e Tailwind CSS.
+A modern personal finance tracker built with Next.js 15, TypeScript, Prisma, and Tailwind CSS.
 
 ![Monicash Dashboard](https://via.placeholder.com/800x400/3B82F6/FFFFFF?text=Monicash+Dashboard)
 
-## ✨ Funcionalidades
+## ✨ Features
 
-- **🔐 Autenticação PIN**: Acesso protegido com PIN de 6 dígitos
-- **📊 Dashboard Interativo**: Visualize seus gastos com gráficos e estatísticas
-- **💸 Gerenciamento de Gastos**: Adicione, edite e exclua gastos facilmente
-- **🏷️ Categorização**: Organize gastos por categorias coloridas
-- **📅 Filtros por Período**: Visualize gastos por mês ou todos os períodos
-- **📱 Design Responsivo**: Interface otimizada para desktop e mobile
-- **🎨 UI Moderna**: Interface limpa usando Tailwind CSS e Radix UI
-- **☁️ Banco Serverless**: Usando Neon para escalabilidade automática e zero configuração
+- **🔐 PIN Authentication**: Secure access with a 6-digit PIN.
+- **📊 Interactive Dashboard**: Visualize your finances with dynamic charts and statistics.
+- **💸 Expense & Income Management**: Easily add, edit, and delete expenses and incomes.
+- **🏷️ Expense Categorization**: Organize expenses with customizable, color-coded categories.
+- **📅 Period Filtering**: View transactions by month or for all time.
+- **🔍 Transaction Details**: View detailed information for each transaction in a modal.
+- **⬇️ Excel Export**: Export your financial data for a selected period to an Excel file.
+- **📱 Responsive Design**: Optimized interface for both desktop and mobile devices.
+- **🎨 Modern UI**: Clean and intuitive user interface built with Tailwind CSS and shadcn/ui.
+- **☁️ Serverless Database**: Utilizes Neon for a scalable, auto-managed PostgreSQL database.
 
-## 🚀 Início Rápido
+## 🚀 Getting Started
 
-### Pré-requisitos
+### Prerequisites
 
 - Node.js 18+
-- Conta no [Neon](https://neon.tech) (banco de dados PostgreSQL serverless)
-- npm ou yarn
+- A [Neon](https://neon.tech) account (for a serverless PostgreSQL database)
+- npm or yarn
 
-### Instalação
+### Installation
 
-1. **Clone o repositório**
+1.  **Clone the repository**
 
-```bash
-git clone https://github.com/seu-usuario/monicash.git
-cd monicash
-```
+    ```bash
+    git clone https://github.com/your-username/monicash.git
+    cd monicash
+    ```
 
-2. **Instale as dependências**
+2.  **Install dependencies**
 
-```bash
-npm install
-```
+    ```bash
+    npm install
+    ```
 
-3. **Configure o banco de dados Neon**
+3.  **Set up your database**
 
-```bash
-# Crie um arquivo .env na raiz do projeto
-touch .env
+    Create a `.env` file in the project root:
 
-# Configure as URLs do Neon no arquivo .env
-# Obtenha essas URLs no dashboard do Neon: https://console.neon.tech/
-DATABASE_URL="postgresql://username:password@ep-xxx-pooler.region.neon.tech/database?sslmode=require"
-DIRECT_URL="postgresql://username:password@ep-xxx.region.neon.tech/database?sslmode=require"
+    ```bash
+    touch .env
+    ```
 
-# Configure o PIN de autenticação (6 dígitos)
-AUTH_PIN=123456
-```
+    Add your Neon database connection strings and a secret PIN to the `.env` file. You can get the URLs from your Neon project dashboard.
 
-**Como obter as URLs do Neon:**
+    ```env
+    # Get from Neon Dashboard -> Connection Details
+    # Use the "pooled" connection string for DATABASE_URL
+    DATABASE_URL="postgresql://username:password@ep-xxx-pooler.region.neon.tech/database?sslmode=require"
+    # Use the "direct" connection string for DIRECT_URL (remove '-pooler' from hostname)
+    DIRECT_URL="postgresql://username:password@ep-xxx.region.neon.tech/database?sslmode=require"
 
-1. Acesse [console.neon.tech](https://console.neon.tech/) e crie uma conta
-2. Crie um novo projeto
-3. Na aba "Dashboard" do seu projeto, encontre a seção "Connection Details"
-4. Use a **Connection string** como `DATABASE_URL` (versão pooled)
-5. Para `DIRECT_URL`, use a mesma string mas remova `-pooler` do hostname
+    # Set your 6-digit authentication PIN
+    AUTH_PIN=123456
+    ```
 
-6. **Execute as migrações do banco**
+4.  **Run database migrations**
 
-```bash
-npx prisma migrate dev
-```
+    This will set up the database schema based on `prisma/schema.prisma`.
 
-7. **Popule o banco com dados iniciais**
+    ```bash
+    npx prisma migrate dev
+    ```
 
-```bash
-npx prisma db seed
-```
+5.  **Seed the database**
 
-8. **Inicie o servidor de desenvolvimento**
+    This will populate the database with initial categories.
 
-```bash
-npm run dev
-```
+    ```bash
+    npx prisma db seed
+    ```
 
-Acesse [http://localhost:3000](http://localhost:3000) para ver o aplicativo.
+6.  **Start the development server**
 
-## 🛠️ Stack Tecnológica
+    ```bash
+    npm run dev
+    ```
 
-- **Framework**: Next.js 15 (App Router)
-- **Linguagem**: TypeScript
-- **Banco de Dados**: Neon (PostgreSQL serverless) com Prisma ORM
-- **Estilização**: Tailwind CSS
-- **Componentes UI**: Radix UI
-- **Gerenciamento de Estado**: TanStack Query (React Query)
-- **Formulários**: React Hook Form com Zod
-- **Gráficos**: Recharts
+    Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-## 📁 Estrutura do Projeto
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+- **Database**: [Neon](https://neon.tech/) (Serverless PostgreSQL)
+- **ORM**: [Prisma](https://www.prisma.io/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/) & [Radix UI](https://www.radix-ui.com/)
+- **State Management**: [TanStack Query (React Query)](https://tanstack.com/query) for server state management.
+- **Forms**: Controlled components with `useState`.
+- **Validation**: [Zod](https://zod.dev/) for schema validation.
+- **Charts**: [Recharts](https://recharts.org/) for data visualization.
+- **Icons**: [Lucide React](https://lucide.dev/)
+
+## 📁 Project Structure
 
 ```
 monicash/
 ├── prisma/
-│   ├── migrations/          # Migrações do banco
-│   ├── schema.prisma        # Schema do banco
-│   └── seed.ts             # Dados iniciais
+│   ├── migrations/          # Database migrations
+│   ├── schema.prisma        # Database schema
+│   └── seed.ts              # Database seed data
 ├── src/
-│   ├── app/                # App Router (Next.js 15)
-│   │   ├── api/            # Rotas da API
-│   │   ├── globals.css     # Estilos globais
-│   │   ├── layout.tsx      # Layout raiz
-│   │   └── page.tsx        # Página inicial
-│   ├── components/         # Componentes React
-│   │   ├── ui/            # Componentes base
-│   │   └── ...            # Componentes específicos
-│   └── lib/               # Utilitários e configurações
-└── public/                # Arquivos estáticos
+│   ├── app/                 # Next.js App Router
+│   │   ├── api/             # API routes
+│   │   ├── globals.css      # Global styles
+│   │   ├── layout.tsx       # Root layout
+│   │   └── page.tsx         # Home page
+│   ├── components/          # React components
+│   │   ├── ui/              # shadcn/ui components
+│   │   └── ...              # Application-specific components
+│   └── lib/                 # Utility functions, types, and configs
+└── public/                  # Static assets
 ```
 
-## 💡 Como Usar
+## 🔧 API Endpoints
 
-### Adicionando Gastos
+### Categories
 
-1. Clique no botão "Adicionar Gasto"
-2. Preencha a data, descrição, categoria e valor
-3. Clique em "Adicionar Gasto" para salvar
+- `GET /api/categories`: Fetch all categories.
+- `POST /api/categories`: Create a new category.
 
-### Visualizando Gastos
+### Expenses
 
-- **Dashboard**: Veja totais mensais, número de transações e gastos por categoria
-- **Lista de Gastos**: Visualize todos os gastos em formato de tabela com opções de edição/exclusão
-- **Gráfico de Categorias**: Representação visual dos gastos por categoria
+- `GET /api/expenses?month=<m>&year=<y>`: Fetch expenses, filterable by month and year. Use `month=all` to get all expenses.
+- `POST /api/expenses`: Create a new expense.
+- `GET /api/expenses/[id]`: Fetch a single expense.
+- `PUT /api/expenses/[id]`: Update an expense.
+- `DELETE /api/expenses/[id]`: Delete an expense.
 
-### Gerenciando Gastos
+### Incomes
 
-- **Editar**: Clique no ícone de edição na tabela de gastos (funcionalidade em desenvolvimento)
-- **Excluir**: Clique no ícone de lixeira e confirme a remoção
-- **Filtrar**: Os gastos são automaticamente filtrados pelo mês atual
+- `GET /api/incomes?month=<m>&year=<y>`: Fetch incomes, filterable by month and year. Use `month=all` to get all incomes.
+- `POST /api/incomes`: Create a new income.
+- `GET /api/incomes/[id]`: Fetch a single income.
+- `PUT /api/incomes/[id]`: Update an income.
+- `DELETE /api/incomes/[id]`: Delete an income.
 
-## 🔧 Endpoints da API
+## 🚧 Future Improvements
 
-### Categorias
+- **Inline Editing**: Complete the functionality for inline editing in the transaction table.
+- **Custom Date Filters**: Implement a date range picker for custom time periods.
+- **Budgeting**: Add features to set and track monthly budgets.
+- **Recurring Transactions**: Support for automatic logging of recurring expenses and incomes.
+- **Multi-currency Support**: Add the ability to track finances in different currencies.
+- **User Accounts**: Implement full user authentication for a multi-user system.
 
-- `GET /api/categories` - Buscar todas as categorias com contadores de uso
-- `POST /api/categories` - Criar nova categoria
+## 📄 License
 
-### Gastos
-
-- `GET /api/expenses` - Buscar gastos (suporta filtros de mês/ano)
-- `POST /api/expenses` - Criar novo gasto
-- `GET /api/expenses/[id]` - Buscar gasto específico
-- `PUT /api/expenses/[id]` - Atualizar gasto
-- `DELETE /api/expenses/[id]` - Excluir gasto
-
-### Exemplo de Uso da API
-
-```bash
-# Buscar gastos do mês atual
-curl http://localhost:3000/api/expenses
-
-# Adicionar novo gasto
-curl -X POST http://localhost:3000/api/expenses \
-  -H "Content-Type: application/json" \
-  -d '{
-    "date": "2025-07-01",
-    "description": "Almoço no restaurante",
-    "amount": "25.50",
-    "categoryId": "1"
-  }'
-
-# Buscar todas as categorias
-curl http://localhost:3000/api/categories
-```
-
-## 🔄 Migrando de PostgreSQL Local para Neon
-
-Se você estava usando uma configuração local do PostgreSQL, siga estes passos:
-
-1. **Faça backup dos seus dados** (se necessário)
-2. **Configure o Neon** seguindo as instruções acima
-3. **Execute as migrações**: `npx prisma migrate deploy`
-4. **Popule com dados iniciais**: `npx prisma db seed`
-5. **Remova a configuração Docker** (já removida neste projeto)
-
-## 🧪 Testando
-
-O aplicativo inclui várias categorias pré-definidas para uso imediato:
-
-- Alimentação (Vermelho)
-- Transporte (Verde-azulado)
-- Saúde (Azul)
-- Compras (Verde)
-- Entretenimento (Amarelo)
-- Contas e Serviços (Roxo)
-- Outros (Cinza)
-
-## 🚧 Melhorias Futuras
-
-- **Edição de Gastos**: Completar funcionalidade de edição inline
-- **Filtros por Data**: Seleção de intervalos de datas personalizados
-- **Gerenciamento de Orçamento**: Definir e acompanhar orçamentos mensais
-- **Exportação**: Funcionalidade de exportação CSV/Excel
-- **Gastos Recorrentes**: Suporte para transações recorrentes
-- **Múltiplas Moedas**: Suporte para várias moedas
-- **Autenticação de Usuário**: Suporte multi-usuário
-- **App Mobile**: Aplicativo companion em React Native
-
-## 📄 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
+This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
 ---
 
-Feito com ❤️ usando Next.js e TypeScript
+Built with ❤️ using Next.js and TypeScript.
