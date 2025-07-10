@@ -43,7 +43,9 @@ export function RecurringForm({
     type: (recurringTemplate?.type || 'EXPENSE') as RecurringType,
     amount: recurringTemplate?.amount || '',
     description: recurringTemplate?.description || '',
-    categoryId: recurringTemplate?.categoryId || '',
+    categoryId: recurringTemplate?.categoryId
+      ? recurringTemplate.categoryId.toString()
+      : '',
     frequency: (recurringTemplate?.frequency || 'MONTHLY') as Frequency,
     interval: recurringTemplate?.interval || 1,
     startDate: recurringTemplate?.startDate
@@ -59,7 +61,7 @@ export function RecurringForm({
   const queryClient = useQueryClient();
 
   const createMutation = useMutation({
-    mutationFn: async (data: Record<string, any>) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await fetch('/api/recurring-templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -80,7 +82,7 @@ export function RecurringForm({
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (data: Record<string, any>) => {
+    mutationFn: async (data: Record<string, unknown>) => {
       const response = await fetch(
         `/api/recurring-templates/${recurringTemplate!.id}`,
         {
@@ -230,7 +232,7 @@ export function RecurringForm({
             <div className="space-y-2">
               <Label htmlFor="categoryId">Category</Label>
               <Select
-                value={formData.categoryId.toString()}
+                value={formData.categoryId}
                 onValueChange={(value) =>
                   handleInputChange('categoryId', value)
                 }
