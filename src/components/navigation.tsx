@@ -16,7 +16,7 @@ export function Navigation() {
     },
     {
       href: '/recurring',
-      label: 'Recurring',
+      label: 'Recorrentes',
       icon: Repeat,
     },
   ];

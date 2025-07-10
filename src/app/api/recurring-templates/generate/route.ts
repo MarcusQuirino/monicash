@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
 
     if (!templateId) {
       return NextResponse.json(
-        { error: 'Template ID is required' },
+        { error: 'ID do modelo é obrigatório' },
         { status: 400 }
       );
     }
@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
 
     if (!template) {
       return NextResponse.json(
-        { error: 'Recurring template not found' },
+        { error: 'Modelo recorrente não encontrado' },
         { status: 404 }
       );
     }
 
     if (!template.isActive) {
       return NextResponse.json(
-        { error: 'Template is not active' },
+        { error: 'Modelo não está ativo' },
         { status: 400 }
       );
     }
@@ -38,17 +38,14 @@ export async function POST(request: NextRequest) {
     const currentNextDueDate = new Date(template.nextDueDate);
     if (targetDate < currentNextDueDate) {
       return NextResponse.json(
-        { error: 'Not yet due for generation' },
+        { error: 'Ainda não está na data de vencimento' },
         { status: 400 }
       );
     }
 
     // Check if end date has passed
     if (template.endDate && targetDate > new Date(template.endDate)) {
-      return NextResponse.json(
-        { error: 'Template has expired' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Modelo expirou' }, { status: 400 });
     }
 
     // Generate the transaction
@@ -98,14 +95,14 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({
-      message: 'Transaction generated successfully',
+      message: 'Transação gerada com sucesso',
       transaction: generatedTransaction,
       nextDueDate,
     });
   } catch (error) {
     console.error('Error generating transaction:', error);
     return NextResponse.json(
-      { error: 'Failed to generate transaction' },
+      { error: 'Falha ao gerar transação' },
       { status: 500 }
     );
   }
@@ -120,7 +117,7 @@ export async function GET(request: NextRequest) {
       process.env.CRON_SECRET &&
       authHeader !== `Bearer ${process.env.CRON_SECRET}`
     ) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     const today = new Date();
@@ -201,19 +198,19 @@ export async function GET(request: NextRequest) {
         );
         results.push({
           templateId: template.id,
-          error: 'Failed to generate transaction',
+          error: 'Falha ao gerar transação',
         });
       }
     }
 
     return NextResponse.json({
-      message: `Processed ${dueTemplates.length} templates`,
+      message: `Processados ${dueTemplates.length} modelos`,
       results,
     });
   } catch (error) {
     console.error('Error in auto-generation:', error);
     return NextResponse.json(
-      { error: 'Failed to auto-generate transactions' },
+      { error: 'Falha ao gerar transações automaticamente' },
       { status: 500 }
     );
   }
