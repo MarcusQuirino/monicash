@@ -1,7 +1,8 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Transaction } from "@/lib/types";
+import { useState } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import type { Transaction, Category } from "@/lib/types";
 import {
   Table,
   TableBody,
@@ -11,6 +12,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Edit,
   Trash2,
@@ -19,6 +28,8 @@ import {
   FileText,
   TrendingUp,
   TrendingDown,
+  Check,
+  X,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -40,6 +51,13 @@ type TransactionTableProps = {
   onViewDetails: (transaction: Transaction) => void;
 };
 
+type EditingState = {
+  transactionId: number;
+  transactionType: "expense" | "income";
+  field: "date" | "description" | "amount" | "category";
+  value: string;
+} | null;
+
 export function ExpenseTable({
   transactions,
   onEditExpense,
@@ -47,6 +65,17 @@ export function ExpenseTable({
   onViewDetails,
 }: TransactionTableProps) {
   const queryClient = useQueryClient();
+  const [editingState, setEditingState] = useState<EditingState>(null);
+
+  // Fetch categories for inline editing
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const response = await fetch("/api/categories");
+      if (!response.ok) throw new Error("Falha ao buscar categorias");
+      return response.json();
+    },
+  });
 
   const deleteExpenseMutation = useMutation({
     mutationFn: async (id: number) => {
@@ -75,6 +104,55 @@ export function ExpenseTable({
     },
   });
 
+  const updateExpenseMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: Partial<Transaction>;
+    }) => {
+      const response = await fetch(`/api/expenses/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Falha ao atualizar gasto");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      setEditingState(null);
+    },
+  });
+
+  const updateIncomeMutation = useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: number;
+      data: Partial<Transaction>;
+    }) => {
+      const response = await fetch(`/api/incomes/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) throw new Error("Falha ao atualizar entrada");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["incomes"] });
+      queryClient.invalidateQueries({ queryKey: ["expenses"] }); // Refresh combined view
+      setEditingState(null);
+    },
+  });
+
   const handleDelete = (transaction: Transaction) => {
     if (transaction.type === "expense") {
       deleteExpenseMutation.mutate(transaction.id);
@@ -89,6 +167,90 @@ export function ExpenseTable({
     } else {
       onEditIncome(transaction);
     }
+  };
+
+  const startInlineEdit = (
+    transaction: Transaction,
+    field: "date" | "description" | "amount" | "category"
+  ) => {
+    let value = "";
+    switch (field) {
+      case "date":
+        value = new Date(transaction.date).toISOString().split("T")[0];
+        break;
+      case "description":
+        value = transaction.description || "";
+        break;
+      case "amount":
+        value = transaction.amount;
+        break;
+      case "category":
+        value = transaction.type === "expense" && transaction.category 
+          ? transaction.category.id.toString() 
+          : "";
+        break;
+    }
+
+    setEditingState({
+      transactionId: transaction.id,
+      transactionType: transaction.type,
+      field,
+      value,
+    });
+  };
+
+  const saveInlineEdit = () => {
+    if (!editingState) return;
+
+    const { transactionId, transactionType, field, value } = editingState;
+    
+    let updateData: any = {};
+    
+    switch (field) {
+      case "date":
+        updateData.date = value;
+        break;
+      case "description":
+        updateData.description = value;
+        break;
+      case "amount":
+        const numericValue = parseFloat(value);
+        if (isNaN(numericValue) || numericValue <= 0) {
+          alert("Por favor, insira um valor válido maior que zero");
+          return;
+        }
+        updateData.amount = value;
+        break;
+      case "category":
+        if (transactionType === "expense") {
+          const categoryId = parseInt(value);
+          if (isNaN(categoryId)) {
+            alert("Por favor, selecione uma categoria válida");
+            return;
+          }
+          updateData.categoryId = categoryId;
+        }
+        break;
+    }
+
+    if (transactionType === "expense") {
+      updateExpenseMutation.mutate({ id: transactionId, data: updateData });
+    } else {
+      updateIncomeMutation.mutate({ id: transactionId, data: updateData });
+    }
+  };
+
+  const cancelInlineEdit = () => {
+    setEditingState(null);
+  };
+
+  const isEditing = (transaction: Transaction, field: string) => {
+    return (
+      editingState &&
+      editingState.transactionId === transaction.id &&
+      editingState.transactionType === transaction.type &&
+      editingState.field === field
+    );
   };
 
   const truncateText = (text: string, maxLength: number = 50) => {
@@ -218,7 +380,7 @@ export function ExpenseTable({
         ))}
       </div>
 
-      {/* Desktop Table Layout */}
+      {/* Desktop Table Layout with Inline Editing */}
       <div className="hidden sm:block rounded-md border">
         <Table>
           <TableHeader>
@@ -235,12 +397,11 @@ export function ExpenseTable({
             {transactions.map((transaction) => (
               <TableRow
                 key={`${transaction.type}-${transaction.id}`}
-                className={`cursor-pointer hover:opacity-90 ${
+                className={`${
                   transaction.type === "income"
                     ? "bg-green-50 hover:bg-green-100"
                     : "hover:bg-gray-50"
                 }`}
-                onClick={() => onViewDetails(transaction)}
               >
                 <TableCell>
                   <div className="flex items-center space-x-2">
@@ -261,21 +422,112 @@ export function ExpenseTable({
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
-                  {new Date(transaction.date).toLocaleDateString("pt-BR")}
-                </TableCell>
+                
+                {/* Date Cell - Inline Editable */}
                 <TableCell
-                  className="max-w-[200px]"
-                  title={transaction.description || ""}
+                  className="cursor-pointer hover:bg-gray-100"
+                  onClick={() => startInlineEdit(transaction, "date")}
                 >
-                  {transaction.description
-                    ? truncateText(transaction.description)
-                    : "-"}
+                  {isEditing(transaction, "date") ? (
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="date"
+                        value={editingState?.value || ""}
+                        onChange={(e) =>
+                          setEditingState(prev => prev ? { ...prev, value: e.target.value } : null)
+                        }
+                        className="w-36"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveInlineEdit();
+                          if (e.key === "Escape") cancelInlineEdit();
+                        }}
+                        autoFocus
+                      />
+                      <Button size="sm" variant="ghost" onClick={saveInlineEdit}>
+                        <Check className="w-4 h-4 text-green-600" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={cancelInlineEdit}>
+                        <X className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <span className="hover:underline">
+                      {new Date(transaction.date).toLocaleDateString("pt-BR")}
+                    </span>
+                  )}
                 </TableCell>
-                <TableCell>
-                  {transaction.type === "expense" && transaction.category ? (
+
+                {/* Description Cell - Inline Editable */}
+                <TableCell
+                  className="max-w-[200px] cursor-pointer hover:bg-gray-100"
+                  title={transaction.description || ""}
+                  onClick={() => startInlineEdit(transaction, "description")}
+                >
+                  {isEditing(transaction, "description") ? (
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        value={editingState?.value || ""}
+                        onChange={(e) =>
+                          setEditingState(prev => prev ? { ...prev, value: e.target.value } : null)
+                        }
+                        className="min-w-[150px]"
+                        placeholder="Descrição..."
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveInlineEdit();
+                          if (e.key === "Escape") cancelInlineEdit();
+                        }}
+                        autoFocus
+                      />
+                      <Button size="sm" variant="ghost" onClick={saveInlineEdit}>
+                        <Check className="w-4 h-4 text-green-600" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={cancelInlineEdit}>
+                        <X className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <span className="hover:underline">
+                      {transaction.description
+                        ? truncateText(transaction.description)
+                        : "-"}
+                    </span>
+                  )}
+                </TableCell>
+
+                {/* Category Cell - Inline Editable (only for expenses) */}
+                <TableCell
+                  className={transaction.type === "expense" ? "cursor-pointer hover:bg-gray-100" : ""}
+                  onClick={() => transaction.type === "expense" && startInlineEdit(transaction, "category")}
+                >
+                  {transaction.type === "expense" && isEditing(transaction, "category") ? (
+                    <div className="flex items-center space-x-2">
+                      <Select
+                        value={editingState?.value || ""}
+                        onValueChange={(value) =>
+                          setEditingState(prev => prev ? { ...prev, value } : null)
+                        }
+                      >
+                        <SelectTrigger className="w-[140px]">
+                          <SelectValue placeholder="Categoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button size="sm" variant="ghost" onClick={saveInlineEdit}>
+                        <Check className="w-4 h-4 text-green-600" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={cancelInlineEdit}>
+                        <X className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  ) : transaction.type === "expense" && transaction.category ? (
                     <span
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium hover:opacity-80"
                       style={getCategoryBadgeStyles(transaction.category.color)}
                     >
                       {transaction.category.name}
@@ -284,22 +536,65 @@ export function ExpenseTable({
                     <span className="text-sm text-gray-500">-</span>
                   )}
                 </TableCell>
+
+                {/* Amount Cell - Inline Editable */}
                 <TableCell
-                  className={`text-right font-medium ${
-                    transaction.type === "income"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
+                  className="text-right cursor-pointer hover:bg-gray-100"
+                  onClick={() => startInlineEdit(transaction, "amount")}
                 >
-                  {transaction.type === "income" ? "+" : "-"}R${" "}
-                  {parseFloat(transaction.amount).toFixed(2).replace(".", ",")}
+                  {isEditing(transaction, "amount") ? (
+                    <div className="flex items-center justify-end space-x-2">
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={editingState?.value || ""}
+                        onChange={(e) =>
+                          setEditingState(prev => prev ? { ...prev, value: e.target.value } : null)
+                        }
+                        className="w-24 text-right"
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") saveInlineEdit();
+                          if (e.key === "Escape") cancelInlineEdit();
+                        }}
+                        autoFocus
+                      />
+                      <Button size="sm" variant="ghost" onClick={saveInlineEdit}>
+                        <Check className="w-4 h-4 text-green-600" />
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={cancelInlineEdit}>
+                        <X className="w-4 h-4 text-red-600" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <span
+                      className={`font-medium hover:underline ${
+                        transaction.type === "income"
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {transaction.type === "income" ? "+" : "-"}R${" "}
+                      {parseFloat(transaction.amount).toFixed(2).replace(".", ",")}
+                    </span>
+                  )}
                 </TableCell>
-                <TableCell onClick={(e) => e.stopPropagation()}>
+
+                <TableCell>
                   <div className="flex items-center space-x-2">
                     <Button
                       variant="ghost"
                       size="sm"
+                      onClick={() => onViewDetails(transaction)}
+                      title="Ver detalhes"
+                    >
+                      <FileText className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleEdit(transaction)}
+                      title="Editar em modal"
                     >
                       <Edit className="w-4 h-4" />
                     </Button>
