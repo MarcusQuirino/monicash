@@ -1,12 +1,10 @@
 import { Suspense } from 'react';
+import { prisma } from '@/lib/db';
 import { RecurringManagement } from '@/components/recurring-management';
 import { Navigation } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function getCategories() {
-  // Import and use the database directly for server-side data fetching
-  const { prisma } = await import('@/lib/db');
-
   try {
     const categoriesFromDb = await prisma.category.findMany({
       include: {
