@@ -122,7 +122,7 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-lg text-gray-600">
+        <div className="text-base text-gray-600 sm:text-lg">
           Carregando transações recorrentes...
         </div>
       </div>
@@ -130,87 +130,107 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Transações Recorrentes</h2>
-          <p className="text-gray-600">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header - Mobile Optimized */}
+      <div className="space-y-3 sm:flex sm:items-center sm:justify-between sm:space-y-0">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-lg font-bold text-gray-900 sm:text-xl lg:text-2xl">
+            Transações Recorrentes
+          </h2>
+          <p className="text-xs text-gray-600 sm:text-sm lg:text-base">
             Gerencie suas assinaturas e pagamentos recorrentes
           </p>
         </div>
-        <Button onClick={() => setShowAddForm(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Transação Recorrente
-        </Button>
+        <div className="flex-shrink-0">
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="w-full justify-center sm:w-auto"
+            size="sm"
+          >
+            <Plus className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+            <span className="sm:hidden">Adicionar</span>
+            <span className="hidden sm:inline">Adicionar Transação</span>
+          </Button>
+        </div>
       </div>
 
       {recurringTemplates.length === 0 ? (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <Repeat className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium">
+        <Card className="overflow-hidden">
+          <CardContent className="py-6 text-center sm:py-8">
+            <Repeat className="mx-auto h-10 w-10 text-gray-400 sm:h-12 sm:w-12" />
+            <h3 className="mt-3 text-base font-medium sm:mt-4 sm:text-lg">
               Nenhuma transação recorrente
             </h3>
-            <p className="mt-2 text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 sm:mt-2 sm:text-sm">
               Comece criando sua primeira transação recorrente
             </p>
-            <Button className="mt-4" onClick={() => setShowAddForm(true)}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button
+              className="mt-3 w-full sm:mt-4 sm:w-auto"
+              onClick={() => setShowAddForm(true)}
+              size="sm"
+            >
+              <Plus className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
               Adicionar Transação Recorrente
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-6">
           {recurringTemplates.map((template) => {
             const nextDue = getNextDueDate(template);
             return (
-              <Card key={template.id} className="relative">
-                <CardHeader className="pb-3">
+              <Card key={template.id} className="relative overflow-hidden">
+                <CardHeader className="pb-2 sm:pb-3">
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-4 w-4 text-gray-500" />
-                      <CardTitle className="text-lg">
-                        R${' '}
-                        {parseFloat(template.amount)
-                          .toFixed(2)
-                          .replace('.', ',')}
-                      </CardTitle>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center space-x-1 sm:space-x-2">
+                        <DollarSign className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
+                        <CardTitle className="text-sm font-semibold sm:text-base lg:text-lg">
+                          R${' '}
+                          {parseFloat(template.amount)
+                            .toFixed(2)
+                            .replace('.', ',')}
+                        </CardTitle>
+                      </div>
+                      {template.description && (
+                        <p className="mt-1 text-xs text-gray-600 sm:text-sm">
+                          {template.description}
+                        </p>
+                      )}
                     </div>
-                    <div className="flex space-x-1">
+                    <div className="flex space-x-0.5 sm:space-x-1">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(template)}
+                        className="h-7 w-7 p-0 sm:h-8 sm:w-8"
                       >
-                        <Pencil className="h-4 w-4" />
+                        <Pencil className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDelete(template)}
+                        className="h-7 w-7 p-0 sm:h-8 sm:w-8"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   </div>
-                  {template.description && (
-                    <p className="text-sm text-gray-600">
-                      {template.description}
-                    </p>
-                  )}
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="space-y-2 sm:space-y-3">
                   <div className="flex items-center justify-between">
                     <Badge
                       variant={
                         template.type === 'EXPENSE' ? 'destructive' : 'default'
                       }
+                      className="text-xs"
                     >
                       {template.type === 'EXPENSE' ? 'Despesa' : 'Receita'}
                     </Badge>
                     <Badge
                       variant={template.isActive ? 'default' : 'secondary'}
+                      className="text-xs"
                     >
                       {template.isActive ? 'Ativo' : 'Inativo'}
                     </Badge>
@@ -219,33 +239,33 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
                   {template.category && (
                     <div className="flex items-center space-x-2">
                       <div
-                        className="h-3 w-3 rounded-full"
+                        className="h-2 w-2 rounded-full sm:h-3 sm:w-3"
                         style={{
                           backgroundColor: template.category.color || '#gray',
                         }}
                       />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-xs text-gray-600 sm:text-sm">
                         {template.category.name}
                       </span>
                     </div>
                   )}
 
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-1.5 text-xs sm:space-y-2 sm:text-sm">
                     <div className="flex items-center space-x-2">
-                      <Repeat className="h-4 w-4 text-gray-500" />
+                      <Repeat className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
                       <span>
                         {formatFrequency(template.frequency, template.interval)}
                       </span>
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-gray-500" />
+                      <Calendar className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
                       <span>Iniciado: {formatDate(template.startDate)}</span>
                     </div>
 
                     {template.endDate && (
                       <div className="flex items-center space-x-2">
-                        <Calendar className="h-4 w-4 text-gray-500" />
+                        <Calendar className="h-3 w-3 text-gray-500 sm:h-4 sm:w-4" />
                         <span>Termina: {formatDate(template.endDate)}</span>
                       </div>
                     )}
@@ -255,9 +275,9 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
                         className={`flex items-center space-x-2 ${nextDue.isOverdue ? 'text-red-600' : 'text-blue-600'}`}
                       >
                         {nextDue.isOverdue && (
-                          <AlertCircle className="h-4 w-4" />
+                          <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
                         )}
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
                         <span className="font-medium">{nextDue.text}</span>
                       </div>
                     )}
@@ -284,16 +304,18 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
         open={!!deletingTemplate}
         onOpenChange={() => setDeletingTemplate(null)}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="mx-3 max-w-sm sm:mx-auto sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir Transação Recorrente</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base sm:text-lg">
+              Excluir Transação Recorrente
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm">
               Tem certeza de que deseja excluir esta transação recorrente? Esta
               ação não pode ser desfeita.
             </AlertDialogDescription>
             {deletingTemplate && (
-              <div className="mt-2 rounded bg-gray-50 p-3">
-                <p className="font-medium">
+              <div className="mt-2 rounded bg-gray-50 p-2 sm:p-3">
+                <p className="text-sm font-medium sm:text-base">
                   {deletingTemplate.type === 'EXPENSE' ? 'Despesa' : 'Receita'}:
                   R${' '}
                   {parseFloat(deletingTemplate.amount)
@@ -301,18 +323,20 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
                     .replace('.', ',')}
                 </p>
                 {deletingTemplate.description && (
-                  <p className="text-sm text-gray-600">
+                  <p className="text-xs text-gray-600 sm:text-sm">
                     {deletingTemplate.description}
                   </p>
                 )}
               </div>
             )}
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="gap-2 sm:gap-3">
+            <AlertDialogCancel className="text-xs sm:text-sm">
+              Cancelar
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-red-600 text-xs hover:bg-red-700 sm:text-sm"
             >
               Excluir
             </AlertDialogAction>

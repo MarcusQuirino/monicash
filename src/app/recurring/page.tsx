@@ -36,29 +36,31 @@ export default async function RecurringPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl lg:text-3xl">
             Transações Recorrentes
           </h1>
-          <p className="mt-1 text-sm text-gray-600 sm:mt-2 sm:text-base">
+          <p className="mt-1 text-xs text-gray-600 sm:mt-2 sm:text-sm lg:text-base">
             Gerencie suas assinaturas e pagamentos recorrentes
           </p>
         </div>
 
-        <Navigation />
+        <div className="mb-4 sm:mb-6">
+          <Navigation />
+        </div>
 
         <Suspense
           fallback={
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3 lg:gap-6">
               {[...Array(3)].map((_, i) => (
-                <Card key={i}>
+                <Card key={i} className="overflow-hidden">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-gray-500">
                       Carregando...
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-20 animate-pulse rounded bg-gray-200"></div>
+                    <div className="h-16 animate-pulse rounded bg-gray-200 sm:h-20"></div>
                   </CardContent>
                 </Card>
               ))}
