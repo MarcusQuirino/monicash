@@ -4,22 +4,32 @@ import { Navigation } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function getCategories() {
-  // For server-side rendering, construct the full URL
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000');
+  // Import and use the database directly for server-side data fetching
+  const { prisma } = await import('@/lib/db');
 
-  const response = await fetch(`${baseUrl}/api/categories`, {
-    cache: 'no-store',
-  });
+  try {
+    const categoriesFromDb = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: { expenses: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
 
-  if (!response.ok) {
+    // Convert database types to application types
+    const categories = categoriesFromDb.map((category) => ({
+      id: category.id,
+      name: category.name,
+      color: category.color || undefined,
+      _count: category._count,
+    }));
+
+    return categories;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
     throw new Error('Failed to fetch categories');
   }
-
-  return response.json();
 }
 
 export default async function RecurringPage() {
