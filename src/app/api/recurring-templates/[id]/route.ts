@@ -12,7 +12,7 @@ export async function GET(
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: 'Invalid recurring template ID' },
+        { error: 'ID do modelo recorrente inválido' },
         { status: 400 }
       );
     }
@@ -26,7 +26,7 @@ export async function GET(
 
     if (!recurringTemplate) {
       return NextResponse.json(
-        { error: 'Recurring template not found' },
+        { error: 'Modelo recorrente não encontrado' },
         { status: 404 }
       );
     }
@@ -35,7 +35,7 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching recurring template:', error);
     return NextResponse.json(
-      { error: 'Failed to fetch recurring template' },
+      { error: 'Falha ao buscar modelo recorrente' },
       { status: 500 }
     );
   }
@@ -51,7 +51,7 @@ export async function PUT(
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: 'Invalid recurring template ID' },
+        { error: 'ID do modelo recorrente inválido' },
         { status: 400 }
       );
     }
@@ -72,7 +72,7 @@ export async function PUT(
     // Validate required fields
     if (!type || !amount || !frequency || !startDate) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Campos obrigatórios não preenchidos' },
         { status: 400 }
       );
     }
@@ -80,20 +80,23 @@ export async function PUT(
     // Validate type
     if (!Object.values(RecurringType).includes(type)) {
       return NextResponse.json(
-        { error: 'Invalid recurring type' },
+        { error: 'Tipo de recorrência inválido' },
         { status: 400 }
       );
     }
 
     // Validate frequency
     if (!Object.values(Frequency).includes(frequency)) {
-      return NextResponse.json({ error: 'Invalid frequency' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Frequência inválida' },
+        { status: 400 }
+      );
     }
 
     // For expenses, categoryId is required
     if (type === 'EXPENSE' && !categoryId) {
       return NextResponse.json(
-        { error: 'Category is required for expenses' },
+        { error: 'Categoria é obrigatória para despesas' },
         { status: 400 }
       );
     }
@@ -128,7 +131,7 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating recurring template:', error);
     return NextResponse.json(
-      { error: 'Failed to update recurring template' },
+      { error: 'Falha ao atualizar modelo recorrente' },
       { status: 500 }
     );
   }
@@ -144,7 +147,7 @@ export async function DELETE(
 
     if (isNaN(id)) {
       return NextResponse.json(
-        { error: 'Invalid recurring template ID' },
+        { error: 'ID do modelo recorrente inválido' },
         { status: 400 }
       );
     }
@@ -154,12 +157,12 @@ export async function DELETE(
     });
 
     return NextResponse.json({
-      message: 'Recurring template deleted successfully',
+      message: 'Modelo recorrente excluído com sucesso',
     });
   } catch (error) {
     console.error('Error deleting recurring template:', error);
     return NextResponse.json(
-      { error: 'Failed to delete recurring template' },
+      { error: 'Falha ao excluir modelo recorrente' },
       { status: 500 }
     );
   }

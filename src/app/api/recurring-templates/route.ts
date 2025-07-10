@@ -69,7 +69,7 @@ export async function GET() {
       Date.now() - startTime
     );
     return NextResponse.json(
-      { error: 'Failed to fetch recurring templates' },
+      { error: 'Falha ao buscar modelos recorrentes' },
       { status: 500 }
     );
   }
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
         'recurringTemplate',
         undefined,
         undefined,
-        { error: 'Missing required fields' }
+        { error: 'Campos obrigatórios não preenchidos' }
       );
       logResponse(
         'POST',
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
         Date.now() - startTime
       );
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Campos obrigatórios não preenchidos' },
         { status: 400 }
       );
     }
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
         'recurringTemplate',
         undefined,
         undefined,
-        { error: 'Invalid recurring type' }
+        { error: 'Tipo de recorrência inválido' }
       );
       logResponse(
         'POST',
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
         Date.now() - startTime
       );
       return NextResponse.json(
-        { error: 'Invalid recurring type' },
+        { error: 'Tipo de recorrência inválido' },
         { status: 400 }
       );
     }
@@ -156,27 +156,7 @@ export async function POST(request: NextRequest) {
         'recurringTemplate',
         undefined,
         undefined,
-        { error: 'Invalid frequency' }
-      );
-      logResponse(
-        'POST',
-        '/api/recurring-templates',
-        400,
-        undefined,
-        requestId,
-        Date.now() - startTime
-      );
-      return NextResponse.json({ error: 'Invalid frequency' }, { status: 400 });
-    }
-
-    // For expenses, categoryId is required
-    if (type === 'EXPENSE' && !categoryId) {
-      logBusinessLogic(
-        'validation_failed',
-        'recurringTemplate',
-        undefined,
-        undefined,
-        { error: 'Category required for expenses' }
+        { error: 'Frequência inválida' }
       );
       logResponse(
         'POST',
@@ -187,7 +167,30 @@ export async function POST(request: NextRequest) {
         Date.now() - startTime
       );
       return NextResponse.json(
-        { error: 'Category is required for expenses' },
+        { error: 'Frequência inválida' },
+        { status: 400 }
+      );
+    }
+
+    // For expenses, categoryId is required
+    if (type === 'EXPENSE' && !categoryId) {
+      logBusinessLogic(
+        'validation_failed',
+        'recurringTemplate',
+        undefined,
+        undefined,
+        { error: 'Categoria é obrigatória para despesas' }
+      );
+      logResponse(
+        'POST',
+        '/api/recurring-templates',
+        400,
+        undefined,
+        requestId,
+        Date.now() - startTime
+      );
+      return NextResponse.json(
+        { error: 'Categoria é obrigatória para despesas' },
         { status: 400 }
       );
     }
@@ -280,7 +283,7 @@ export async function POST(request: NextRequest) {
       Date.now() - startTime
     );
     return NextResponse.json(
-      { error: 'Failed to create recurring template' },
+      { error: 'Falha ao criar modelo recorrente' },
       { status: 500 }
     );
   }

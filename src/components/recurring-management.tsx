@@ -67,9 +67,9 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
 
   const formatFrequency = (frequency: string, interval: number) => {
     const freqMap = {
-      WEEKLY: interval === 1 ? 'Weekly' : `Every ${interval} weeks`,
-      MONTHLY: interval === 1 ? 'Monthly' : `Every ${interval} months`,
-      YEARLY: interval === 1 ? 'Yearly' : `Every ${interval} years`,
+      WEEKLY: interval === 1 ? 'Semanal' : `A cada ${interval} semanas`,
+      MONTHLY: interval === 1 ? 'Mensal' : `A cada ${interval} meses`,
+      YEARLY: interval === 1 ? 'Anual' : `A cada ${interval} anos`,
     };
     return freqMap[frequency as keyof typeof freqMap] || frequency;
   };
@@ -85,13 +85,13 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     if (diffDays < 0) {
-      return { text: `${Math.abs(diffDays)} days overdue`, isOverdue: true };
+      return { text: `${Math.abs(diffDays)} dias em atraso`, isOverdue: true };
     } else if (diffDays === 0) {
-      return { text: 'Due today', isOverdue: false };
+      return { text: 'Vence hoje', isOverdue: false };
     } else if (diffDays === 1) {
-      return { text: 'Due tomorrow', isOverdue: false };
+      return { text: 'Vence amanhã', isOverdue: false };
     } else {
-      return { text: `Due in ${diffDays} days`, isOverdue: false };
+      return { text: `Vence em ${diffDays} dias`, isOverdue: false };
     }
   };
 
@@ -123,7 +123,7 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
     return (
       <div className="flex items-center justify-center py-8">
         <div className="text-lg text-gray-600">
-          Loading recurring transactions...
+          Carregando transações recorrentes...
         </div>
       </div>
     );
@@ -133,14 +133,14 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Recurring Transactions</h2>
+          <h2 className="text-2xl font-bold">Transações Recorrentes</h2>
           <p className="text-gray-600">
-            Manage your subscriptions and recurring payments
+            Gerencie suas assinaturas e pagamentos recorrentes
           </p>
         </div>
         <Button onClick={() => setShowAddForm(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Add Recurring Transaction
+          Adicionar Transação Recorrente
         </Button>
       </div>
 
@@ -149,14 +149,14 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
           <CardContent className="py-8 text-center">
             <Repeat className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-4 text-lg font-medium">
-              No recurring transactions
+              Nenhuma transação recorrente
             </h3>
             <p className="mt-2 text-gray-500">
-              Get started by creating your first recurring transaction
+              Comece criando sua primeira transação recorrente
             </p>
             <Button className="mt-4" onClick={() => setShowAddForm(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Recurring Transaction
+              Adicionar Transação Recorrente
             </Button>
           </CardContent>
         </Card>
@@ -207,12 +207,12 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
                         template.type === 'EXPENSE' ? 'destructive' : 'default'
                       }
                     >
-                      {template.type === 'EXPENSE' ? 'Expense' : 'Income'}
+                      {template.type === 'EXPENSE' ? 'Despesa' : 'Receita'}
                     </Badge>
                     <Badge
                       variant={template.isActive ? 'default' : 'secondary'}
                     >
-                      {template.isActive ? 'Active' : 'Inactive'}
+                      {template.isActive ? 'Ativo' : 'Inativo'}
                     </Badge>
                   </div>
 
@@ -240,13 +240,13 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
 
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4 text-gray-500" />
-                      <span>Started: {formatDate(template.startDate)}</span>
+                      <span>Iniciado: {formatDate(template.startDate)}</span>
                     </div>
 
                     {template.endDate && (
                       <div className="flex items-center space-x-2">
                         <Calendar className="h-4 w-4 text-gray-500" />
-                        <span>Ends: {formatDate(template.endDate)}</span>
+                        <span>Termina: {formatDate(template.endDate)}</span>
                       </div>
                     )}
 
@@ -286,16 +286,19 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Recurring Transaction</AlertDialogTitle>
+            <AlertDialogTitle>Excluir Transação Recorrente</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this recurring transaction? This
-              action cannot be undone.
+              Tem certeza de que deseja excluir esta transação recorrente? Esta
+              ação não pode ser desfeita.
             </AlertDialogDescription>
             {deletingTemplate && (
               <div className="mt-2 rounded bg-gray-50 p-3">
                 <p className="font-medium">
-                  {deletingTemplate.type === 'EXPENSE' ? 'Expense' : 'Income'}:
-                  R$ {parseFloat(deletingTemplate.amount).toFixed(2)}
+                  {deletingTemplate.type === 'EXPENSE' ? 'Despesa' : 'Receita'}:
+                  R${' '}
+                  {parseFloat(deletingTemplate.amount)
+                    .toFixed(2)
+                    .replace('.', ',')}
                 </p>
                 {deletingTemplate.description && (
                   <p className="text-sm text-gray-600">
@@ -306,12 +309,12 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
             )}
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete
+              Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

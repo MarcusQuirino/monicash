@@ -109,26 +109,26 @@ export function RecurringForm({
     const newErrors: Record<string, string> = {};
 
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = 'Amount must be greater than 0';
+      newErrors.amount = 'O valor deve ser maior que 0';
     }
 
     if (formData.type === 'EXPENSE' && !formData.categoryId) {
-      newErrors.categoryId = 'Category is required for expenses';
+      newErrors.categoryId = 'Categoria é obrigatória para despesas';
     }
 
     if (!formData.startDate) {
-      newErrors.startDate = 'Start date is required';
+      newErrors.startDate = 'Data de início é obrigatória';
     }
 
     if (
       formData.endDate &&
       new Date(formData.endDate) <= new Date(formData.startDate)
     ) {
-      newErrors.endDate = 'End date must be after start date';
+      newErrors.endDate = 'Data de fim deve ser posterior à data de início';
     }
 
     if (formData.interval < 1) {
-      newErrors.interval = 'Interval must be at least 1';
+      newErrors.interval = 'Intervalo deve ser pelo menos 1';
     }
 
     setErrors(newErrors);
@@ -177,14 +177,14 @@ export function RecurringForm({
         <DialogHeader>
           <DialogTitle>
             {recurringTemplate
-              ? 'Edit Recurring Transaction'
-              : 'Create Recurring Transaction'}
+              ? 'Editar Transação Recorrente'
+              : 'Criar Transação Recorrente'}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="type">Type</Label>
+            <Label htmlFor="type">Tipo</Label>
             <Select
               value={formData.type}
               onValueChange={(value: RecurringType) =>
@@ -192,24 +192,24 @@ export function RecurringForm({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="EXPENSE">Expense</SelectItem>
-                <SelectItem value="INCOME">Income</SelectItem>
+                <SelectItem value="EXPENSE">Despesa</SelectItem>
+                <SelectItem value="INCOME">Receita</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="amount">Amount (R$)</Label>
+            <Label htmlFor="amount">Valor (R$)</Label>
             <Input
               id="amount"
               type="number"
               step="0.01"
               value={formData.amount}
               onChange={(e) => handleInputChange('amount', e.target.value)}
-              placeholder="0.00"
+              placeholder="0,00"
               className={errors.amount ? 'border-red-500' : ''}
             />
             {errors.amount && (
@@ -218,19 +218,19 @@ export function RecurringForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Descrição</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
-              placeholder="Enter description..."
+              placeholder="Digite a descrição..."
               rows={3}
             />
           </div>
 
           {formData.type === 'EXPENSE' && (
             <div className="space-y-2">
-              <Label htmlFor="categoryId">Category</Label>
+              <Label htmlFor="categoryId">Categoria</Label>
               <Select
                 value={formData.categoryId}
                 onValueChange={(value) =>
@@ -240,7 +240,7 @@ export function RecurringForm({
                 <SelectTrigger
                   className={errors.categoryId ? 'border-red-500' : ''}
                 >
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="Selecione a categoria" />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
@@ -261,7 +261,7 @@ export function RecurringForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="frequency">Frequency</Label>
+              <Label htmlFor="frequency">Frequência</Label>
               <Select
                 value={formData.frequency}
                 onValueChange={(value: Frequency) =>
@@ -269,18 +269,18 @@ export function RecurringForm({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select frequency" />
+                  <SelectValue placeholder="Selecione a frequência" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="WEEKLY">Weekly</SelectItem>
-                  <SelectItem value="MONTHLY">Monthly</SelectItem>
-                  <SelectItem value="YEARLY">Yearly</SelectItem>
+                  <SelectItem value="WEEKLY">Semanal</SelectItem>
+                  <SelectItem value="MONTHLY">Mensal</SelectItem>
+                  <SelectItem value="YEARLY">Anual</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="interval">Every</Label>
+              <Label htmlFor="interval">A cada</Label>
               <Input
                 id="interval"
                 type="number"
@@ -299,7 +299,7 @@ export function RecurringForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate">Data de Início</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -313,7 +313,7 @@ export function RecurringForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">End Date (Optional)</Label>
+              <Label htmlFor="endDate">Data de Fim (Opcional)</Label>
               <Input
                 id="endDate"
                 type="date"
@@ -334,19 +334,19 @@ export function RecurringForm({
               checked={formData.isActive}
               onChange={(e) => handleInputChange('isActive', e.target.checked)}
             />
-            <Label htmlFor="isActive">Active</Label>
+            <Label htmlFor="isActive">Ativo</Label>
           </div>
 
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading
-                ? 'Saving...'
+                ? 'Salvando...'
                 : recurringTemplate
-                  ? 'Update'
-                  : 'Create'}
+                  ? 'Atualizar'
+                  : 'Criar'}
             </Button>
           </div>
         </form>

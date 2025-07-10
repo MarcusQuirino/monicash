@@ -26,10 +26,10 @@ export default async function RecurringPage() {
       <div className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-8">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            Recurring Transactions
+            Transações Recorrentes
           </h1>
           <p className="mt-1 text-sm text-gray-600 sm:mt-2 sm:text-base">
-            Manage your subscriptions and recurring payments
+            Gerencie suas assinaturas e pagamentos recorrentes
           </p>
         </div>
 
@@ -42,7 +42,7 @@ export default async function RecurringPage() {
                 <Card key={i}>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-medium text-gray-500">
-                      Loading...
+                      Carregando...
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
