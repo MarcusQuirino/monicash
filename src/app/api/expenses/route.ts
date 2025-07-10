@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { expenseSchema } from '@/lib/validations';
+import { logRequest, logResponse, logDatabase, logError, logBusinessLogic } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = crypto.randomUUID();
+
+  logRequest('GET', '/api/expenses', undefined, requestId);
+
   try {
     const { searchParams } = new URL(request.url);
     const month = searchParams.get('month');
     const year = searchParams.get('year');
     const categoryId = searchParams.get('categoryId');
+
+    logBusinessLogic('filter_expenses', 'expense', undefined, undefined, { month, year, categoryId });
 
     const currentDate = new Date();
     const targetYear = year ? parseInt(year) : currentDate.getFullYear();
@@ -32,6 +40,7 @@ export async function GET(request: NextRequest) {
       where.categoryId = parseInt(categoryId);
     }
 
+    logDatabase('findMany', 'expense', undefined, undefined);
     const expenses = await prisma.expense.findMany({
       where,
       include: {
@@ -40,9 +49,14 @@ export async function GET(request: NextRequest) {
       orderBy: { date: 'desc' },
     });
 
+    logDatabase('findMany', 'expense', undefined, undefined, undefined);
+    logResponse('GET', '/api/expenses', 200, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(expenses);
   } catch (error) {
-    console.error('Erro ao buscar gastos:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logDatabase('findMany', 'expense', undefined, undefined, errorMessage);
+    logError(error instanceof Error ? error : new Error('Unknown expenses GET error'), 'Expenses API GET', undefined, { requestId });
+    logResponse('GET', '/api/expenses', 500, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(
       { error: 'Falha ao buscar gastos' },
       { status: 500 }
@@ -51,10 +65,21 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = crypto.randomUUID();
+
+  logRequest('POST', '/api/expenses', undefined, requestId);
+
   try {
     const body = await request.json();
     const validatedData = expenseSchema.parse(body);
 
+    logBusinessLogic('create_expense', 'expense', undefined, undefined, {
+      amount: validatedData.amount,
+      categoryId: validatedData.categoryId
+    });
+
+    logDatabase('create', 'expense', undefined, undefined);
     const expense = await prisma.expense.create({
       data: {
         date: new Date(validatedData.date),
@@ -67,9 +92,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    logDatabase('create', 'expense', expense.id.toString(), undefined, undefined);
+    logBusinessLogic('expense_created', 'expense', expense.id.toString(), undefined, { amount: expense.amount });
+    logResponse('POST', '/api/expenses', 201, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(expense, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar gasto:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logDatabase('create', 'expense', undefined, undefined, errorMessage);
+    logError(error instanceof Error ? error : new Error('Unknown expenses POST error'), 'Expenses API POST', undefined, { requestId });
+    logResponse('POST', '/api/expenses', 500, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(
       { error: 'Falha ao criar gasto' },
       { status: 500 }

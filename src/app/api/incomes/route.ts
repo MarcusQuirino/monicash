@@ -2,12 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { incomeSchema } from '@/lib/validations';
 import { prisma } from '@/lib/db';
 import { Decimal } from '@prisma/client/runtime/library';
+import { logRequest, logResponse, logDatabase, logError, logBusinessLogic } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = crypto.randomUUID();
+
+  logRequest('GET', '/api/incomes', undefined, requestId);
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const month = searchParams.get('month');
     const year = searchParams.get('year');
+
+    logBusinessLogic('filter_incomes', 'income', undefined, undefined, { month, year });
 
     let whereClause = {};
 
@@ -23,6 +31,7 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    logDatabase('findMany', 'income', undefined, undefined);
     const incomes = await prisma.income.findMany({
       where: whereClause,
       orderBy: {
@@ -39,9 +48,14 @@ export async function GET(request: NextRequest) {
       updatedAt: income.updatedAt.toISOString(),
     }));
 
+    logDatabase('findMany', 'income', undefined, undefined, undefined);
+    logResponse('GET', '/api/incomes', 200, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(serializedIncomes);
   } catch (error) {
-    console.error('Error fetching incomes:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logDatabase('findMany', 'income', undefined, undefined, errorMessage);
+    logError(error instanceof Error ? error : new Error('Unknown incomes GET error'), 'Incomes API GET', undefined, { requestId });
+    logResponse('GET', '/api/incomes', 500, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(
       { error: 'Failed to fetch incomes' },
       { status: 500 }
@@ -50,10 +64,20 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+  const requestId = crypto.randomUUID();
+
+  logRequest('POST', '/api/incomes', undefined, requestId);
+
   try {
     const body = await request.json();
     const validatedData = incomeSchema.parse(body);
 
+    logBusinessLogic('create_income', 'income', undefined, undefined, {
+      amount: validatedData.amount
+    });
+
+    logDatabase('create', 'income', undefined, undefined);
     const income = await prisma.income.create({
       data: {
         date: new Date(validatedData.date),
@@ -71,9 +95,15 @@ export async function POST(request: NextRequest) {
       updatedAt: income.updatedAt.toISOString(),
     };
 
+    logDatabase('create', 'income', income.id.toString(), undefined, undefined);
+    logBusinessLogic('income_created', 'income', income.id.toString(), undefined, { amount: income.amount.toString() });
+    logResponse('POST', '/api/incomes', 201, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(serializedIncome, { status: 201 });
   } catch (error) {
-    console.error('Error creating income:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logDatabase('create', 'income', undefined, undefined, errorMessage);
+    logError(error instanceof Error ? error : new Error('Unknown incomes POST error'), 'Incomes API POST', undefined, { requestId });
+    logResponse('POST', '/api/incomes', 500, undefined, requestId, Date.now() - startTime);
     return NextResponse.json(
       { error: 'Failed to create income' },
       { status: 500 }
