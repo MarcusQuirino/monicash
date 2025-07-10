@@ -4,12 +4,16 @@ import { Navigation } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function getCategories() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/categories`,
-    {
-      cache: 'no-store',
-    }
-  );
+  // For server-side rendering, construct the full URL
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000');
+
+  const response = await fetch(`${baseUrl}/api/categories`, {
+    cache: 'no-store',
+  });
 
   if (!response.ok) {
     throw new Error('Failed to fetch categories');
