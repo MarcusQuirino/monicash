@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { RecurringType, Frequency } from '@prisma/client';
-import { logRequest, logResponse, logDatabase, logError, logBusinessLogic } from '@/lib/logger';
+import {
+  logRequest,
+  logResponse,
+  logDatabase,
+  logError,
+  logBusinessLogic,
+} from '@/lib/logger';
 
 export async function GET() {
   const startTime = Date.now();
@@ -20,14 +26,48 @@ export async function GET() {
       },
     });
 
-    logDatabase('findMany', 'recurringTemplate', undefined, undefined, undefined);
-    logResponse('GET', '/api/recurring-templates', 200, undefined, requestId, Date.now() - startTime);
+    logDatabase(
+      'findMany',
+      'recurringTemplate',
+      undefined,
+      undefined,
+      undefined
+    );
+    logResponse(
+      'GET',
+      '/api/recurring-templates',
+      200,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(recurringTemplates);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logDatabase('findMany', 'recurringTemplate', undefined, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown recurring templates GET error'), 'Recurring Templates API GET', undefined, { requestId });
-    logResponse('GET', '/api/recurring-templates', 500, undefined, requestId, Date.now() - startTime);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    logDatabase(
+      'findMany',
+      'recurringTemplate',
+      undefined,
+      undefined,
+      errorMessage
+    );
+    logError(
+      error instanceof Error
+        ? error
+        : new Error('Unknown recurring templates GET error'),
+      'Recurring Templates API GET',
+      undefined,
+      { requestId }
+    );
+    logResponse(
+      'GET',
+      '/api/recurring-templates',
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Failed to fetch recurring templates' },
       { status: 500 }
@@ -55,12 +95,31 @@ export async function POST(request: NextRequest) {
       isActive = true,
     } = body;
 
-    logBusinessLogic('validate_recurring_template', 'recurringTemplate', undefined, undefined, { type, frequency, amount });
+    logBusinessLogic(
+      'validate_recurring_template',
+      'recurringTemplate',
+      undefined,
+      undefined,
+      { type, frequency, amount }
+    );
 
     // Validate required fields
     if (!type || !amount || !frequency || !startDate) {
-      logBusinessLogic('validation_failed', 'recurringTemplate', undefined, undefined, { error: 'Missing required fields' });
-      logResponse('POST', '/api/recurring-templates', 400, undefined, requestId, Date.now() - startTime);
+      logBusinessLogic(
+        'validation_failed',
+        'recurringTemplate',
+        undefined,
+        undefined,
+        { error: 'Missing required fields' }
+      );
+      logResponse(
+        'POST',
+        '/api/recurring-templates',
+        400,
+        undefined,
+        requestId,
+        Date.now() - startTime
+      );
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -69,8 +128,21 @@ export async function POST(request: NextRequest) {
 
     // Validate type
     if (!Object.values(RecurringType).includes(type)) {
-      logBusinessLogic('validation_failed', 'recurringTemplate', undefined, undefined, { error: 'Invalid recurring type' });
-      logResponse('POST', '/api/recurring-templates', 400, undefined, requestId, Date.now() - startTime);
+      logBusinessLogic(
+        'validation_failed',
+        'recurringTemplate',
+        undefined,
+        undefined,
+        { error: 'Invalid recurring type' }
+      );
+      logResponse(
+        'POST',
+        '/api/recurring-templates',
+        400,
+        undefined,
+        requestId,
+        Date.now() - startTime
+      );
       return NextResponse.json(
         { error: 'Invalid recurring type' },
         { status: 400 }
@@ -79,15 +151,41 @@ export async function POST(request: NextRequest) {
 
     // Validate frequency
     if (!Object.values(Frequency).includes(frequency)) {
-      logBusinessLogic('validation_failed', 'recurringTemplate', undefined, undefined, { error: 'Invalid frequency' });
-      logResponse('POST', '/api/recurring-templates', 400, undefined, requestId, Date.now() - startTime);
+      logBusinessLogic(
+        'validation_failed',
+        'recurringTemplate',
+        undefined,
+        undefined,
+        { error: 'Invalid frequency' }
+      );
+      logResponse(
+        'POST',
+        '/api/recurring-templates',
+        400,
+        undefined,
+        requestId,
+        Date.now() - startTime
+      );
       return NextResponse.json({ error: 'Invalid frequency' }, { status: 400 });
     }
 
     // For expenses, categoryId is required
     if (type === 'EXPENSE' && !categoryId) {
-      logBusinessLogic('validation_failed', 'recurringTemplate', undefined, undefined, { error: 'Category required for expenses' });
-      logResponse('POST', '/api/recurring-templates', 400, undefined, requestId, Date.now() - startTime);
+      logBusinessLogic(
+        'validation_failed',
+        'recurringTemplate',
+        undefined,
+        undefined,
+        { error: 'Category required for expenses' }
+      );
+      logResponse(
+        'POST',
+        '/api/recurring-templates',
+        400,
+        undefined,
+        requestId,
+        Date.now() - startTime
+      );
       return NextResponse.json(
         { error: 'Category is required for expenses' },
         { status: 400 }
@@ -95,7 +193,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate next due date
-    logBusinessLogic('calculate_next_due_date', 'recurringTemplate', undefined, undefined, { frequency, interval, startDate });
+    logBusinessLogic(
+      'calculate_next_due_date',
+      'recurringTemplate',
+      undefined,
+      undefined,
+      { frequency, interval, startDate }
+    );
     const nextDueDate = calculateNextDueDate(
       new Date(startDate),
       frequency,
@@ -121,17 +225,60 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    logDatabase('create', 'recurringTemplate', recurringTemplate.id.toString(), undefined, undefined);
-    logBusinessLogic('recurring_template_created', 'recurringTemplate', recurringTemplate.id.toString(), undefined, {
-      type, frequency, amount, nextDueDate: nextDueDate.toISOString()
-    });
-    logResponse('POST', '/api/recurring-templates', 201, undefined, requestId, Date.now() - startTime);
+    logDatabase(
+      'create',
+      'recurringTemplate',
+      recurringTemplate.id.toString(),
+      undefined,
+      undefined
+    );
+    logBusinessLogic(
+      'recurring_template_created',
+      'recurringTemplate',
+      recurringTemplate.id.toString(),
+      undefined,
+      {
+        type,
+        frequency,
+        amount,
+        nextDueDate: nextDueDate.toISOString(),
+      }
+    );
+    logResponse(
+      'POST',
+      '/api/recurring-templates',
+      201,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(recurringTemplate, { status: 201 });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    logDatabase('create', 'recurringTemplate', undefined, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown recurring template POST error'), 'Recurring Template API POST', undefined, { requestId });
-    logResponse('POST', '/api/recurring-templates', 500, undefined, requestId, Date.now() - startTime);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    logDatabase(
+      'create',
+      'recurringTemplate',
+      undefined,
+      undefined,
+      errorMessage
+    );
+    logError(
+      error instanceof Error
+        ? error
+        : new Error('Unknown recurring template POST error'),
+      'Recurring Template API POST',
+      undefined,
+      { requestId }
+    );
+    logResponse(
+      'POST',
+      '/api/recurring-templates',
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Failed to create recurring template' },
       { status: 500 }

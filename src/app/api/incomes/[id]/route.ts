@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { incomeSchema } from '@/lib/validations';
 import { prisma } from '@/lib/db';
 import { Decimal } from '@prisma/client/runtime/library';
-import { logRequest, logResponse, logDatabase, logError, logBusinessLogic } from '@/lib/logger';
+import {
+  logRequest,
+  logResponse,
+  logDatabase,
+  logError,
+  logBusinessLogic,
+} from '@/lib/logger';
 
 type Context = {
   params: Promise<{ id: string }>;
@@ -20,7 +26,7 @@ export async function PUT(request: NextRequest, context: Context) {
     const validatedData = incomeSchema.parse(body);
 
     logBusinessLogic('update_income', 'income', id, undefined, {
-      amount: validatedData.amount
+      amount: validatedData.amount,
     });
 
     logDatabase('update', 'income', id, undefined);
@@ -43,15 +49,37 @@ export async function PUT(request: NextRequest, context: Context) {
     };
 
     logDatabase('update', 'income', id, undefined, undefined);
-    logBusinessLogic('income_updated', 'income', id, undefined, { amount: income.amount.toString() });
-    logResponse('PUT', `/api/incomes/${id}`, 200, undefined, requestId, Date.now() - startTime);
+    logBusinessLogic('income_updated', 'income', id, undefined, {
+      amount: income.amount.toString(),
+    });
+    logResponse(
+      'PUT',
+      `/api/incomes/${id}`,
+      200,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(serializedIncome);
   } catch (error) {
     const { id } = await context.params;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     logDatabase('update', 'income', id, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown income PUT error'), 'Income API PUT', undefined, { requestId, incomeId: id });
-    logResponse('PUT', `/api/incomes/${id}`, 500, undefined, requestId, Date.now() - startTime);
+    logError(
+      error instanceof Error ? error : new Error('Unknown income PUT error'),
+      'Income API PUT',
+      undefined,
+      { requestId, incomeId: id }
+    );
+    logResponse(
+      'PUT',
+      `/api/incomes/${id}`,
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Failed to update income' },
       { status: 500 }
@@ -75,14 +103,34 @@ export async function DELETE(request: NextRequest, context: Context) {
 
     logDatabase('delete', 'income', id, undefined, undefined);
     logBusinessLogic('income_deleted', 'income', id, undefined);
-    logResponse('DELETE', `/api/incomes/${id}`, 200, undefined, requestId, Date.now() - startTime);
+    logResponse(
+      'DELETE',
+      `/api/incomes/${id}`,
+      200,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json({ success: true });
   } catch (error) {
     const { id } = await context.params;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     logDatabase('delete', 'income', id, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown income DELETE error'), 'Income API DELETE', undefined, { requestId, incomeId: id });
-    logResponse('DELETE', `/api/incomes/${id}`, 500, undefined, requestId, Date.now() - startTime);
+    logError(
+      error instanceof Error ? error : new Error('Unknown income DELETE error'),
+      'Income API DELETE',
+      undefined,
+      { requestId, incomeId: id }
+    );
+    logResponse(
+      'DELETE',
+      `/api/incomes/${id}`,
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Failed to delete income' },
       { status: 500 }

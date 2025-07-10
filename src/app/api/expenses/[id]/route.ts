@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { expenseSchema } from '@/lib/validations';
-import { logRequest, logResponse, logDatabase, logError, logBusinessLogic } from '@/lib/logger';
+import {
+  logRequest,
+  logResponse,
+  logDatabase,
+  logError,
+  logBusinessLogic,
+} from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -22,7 +28,14 @@ export async function GET(
 
     if (!expense) {
       logDatabase('findUnique', 'expense', id, undefined, 'Record not found');
-      logResponse('GET', `/api/expenses/${id}`, 404, undefined, requestId, Date.now() - startTime);
+      logResponse(
+        'GET',
+        `/api/expenses/${id}`,
+        404,
+        undefined,
+        requestId,
+        Date.now() - startTime
+      );
       return NextResponse.json(
         { error: 'Gasto não encontrado' },
         { status: 404 }
@@ -30,14 +43,34 @@ export async function GET(
     }
 
     logDatabase('findUnique', 'expense', id, undefined, undefined);
-    logResponse('GET', `/api/expenses/${id}`, 200, undefined, requestId, Date.now() - startTime);
+    logResponse(
+      'GET',
+      `/api/expenses/${id}`,
+      200,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(expense);
   } catch (error) {
     const { id } = await params;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     logDatabase('findUnique', 'expense', id, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown expense GET error'), 'Expense API GET', undefined, { requestId, expenseId: id });
-    logResponse('GET', `/api/expenses/${id}`, 500, undefined, requestId, Date.now() - startTime);
+    logError(
+      error instanceof Error ? error : new Error('Unknown expense GET error'),
+      'Expense API GET',
+      undefined,
+      { requestId, expenseId: id }
+    );
+    logResponse(
+      'GET',
+      `/api/expenses/${id}`,
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Falha ao buscar gasto' },
       { status: 500 }
@@ -61,7 +94,7 @@ export async function PUT(
 
     logBusinessLogic('update_expense', 'expense', id, undefined, {
       amount: validatedData.amount,
-      categoryId: validatedData.categoryId
+      categoryId: validatedData.categoryId,
     });
 
     logDatabase('update', 'expense', id, undefined);
@@ -77,15 +110,37 @@ export async function PUT(
     });
 
     logDatabase('update', 'expense', id, undefined, undefined);
-    logBusinessLogic('expense_updated', 'expense', id, undefined, { amount: expense.amount });
-    logResponse('PUT', `/api/expenses/${id}`, 200, undefined, requestId, Date.now() - startTime);
+    logBusinessLogic('expense_updated', 'expense', id, undefined, {
+      amount: expense.amount,
+    });
+    logResponse(
+      'PUT',
+      `/api/expenses/${id}`,
+      200,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(expense);
   } catch (error) {
     const { id } = await params;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     logDatabase('update', 'expense', id, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown expense PUT error'), 'Expense API PUT', undefined, { requestId, expenseId: id });
-    logResponse('PUT', `/api/expenses/${id}`, 500, undefined, requestId, Date.now() - startTime);
+    logError(
+      error instanceof Error ? error : new Error('Unknown expense PUT error'),
+      'Expense API PUT',
+      undefined,
+      { requestId, expenseId: id }
+    );
+    logResponse(
+      'PUT',
+      `/api/expenses/${id}`,
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Falha ao atualizar gasto' },
       { status: 500 }
@@ -112,14 +167,36 @@ export async function DELETE(
 
     logDatabase('delete', 'expense', id, undefined, undefined);
     logBusinessLogic('expense_deleted', 'expense', id, undefined);
-    logResponse('DELETE', `/api/expenses/${id}`, 200, undefined, requestId, Date.now() - startTime);
+    logResponse(
+      'DELETE',
+      `/api/expenses/${id}`,
+      200,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json({ success: true });
   } catch (error) {
     const { id } = await params;
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     logDatabase('delete', 'expense', id, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown expense DELETE error'), 'Expense API DELETE', undefined, { requestId, expenseId: id });
-    logResponse('DELETE', `/api/expenses/${id}`, 500, undefined, requestId, Date.now() - startTime);
+    logError(
+      error instanceof Error
+        ? error
+        : new Error('Unknown expense DELETE error'),
+      'Expense API DELETE',
+      undefined,
+      { requestId, expenseId: id }
+    );
+    logResponse(
+      'DELETE',
+      `/api/expenses/${id}`,
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Falha ao excluir gasto' },
       { status: 500 }

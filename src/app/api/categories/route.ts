@@ -21,13 +21,35 @@ export async function GET() {
     });
 
     logDatabase('findMany', 'category', undefined, undefined, undefined);
-    logResponse('GET', '/api/categories', 200, undefined, requestId, Date.now() - startTime);
+    logResponse(
+      'GET',
+      '/api/categories',
+      200,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(categories);
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     logDatabase('findMany', 'category', undefined, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown categories GET error'), 'Categories API GET', undefined, { requestId });
-    logResponse('GET', '/api/categories', 500, undefined, requestId, Date.now() - startTime);
+    logError(
+      error instanceof Error
+        ? error
+        : new Error('Unknown categories GET error'),
+      'Categories API GET',
+      undefined,
+      { requestId }
+    );
+    logResponse(
+      'GET',
+      '/api/categories',
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Falha ao buscar categorias' },
       { status: 500 }
@@ -50,14 +72,42 @@ export async function POST(request: NextRequest) {
       data: validatedData,
     });
 
-    logDatabase('create', 'category', category.id.toString(), undefined, undefined);
-    logResponse('POST', '/api/categories', 201, undefined, requestId, Date.now() - startTime);
+    logDatabase(
+      'create',
+      'category',
+      category.id.toString(),
+      undefined,
+      undefined
+    );
+    logResponse(
+      'POST',
+      '/api/categories',
+      201,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     logDatabase('create', 'category', undefined, undefined, errorMessage);
-    logError(error instanceof Error ? error : new Error('Unknown categories POST error'), 'Categories API POST', undefined, { requestId });
-    logResponse('POST', '/api/categories', 500, undefined, requestId, Date.now() - startTime);
+    logError(
+      error instanceof Error
+        ? error
+        : new Error('Unknown categories POST error'),
+      'Categories API POST',
+      undefined,
+      { requestId }
+    );
+    logResponse(
+      'POST',
+      '/api/categories',
+      500,
+      undefined,
+      requestId,
+      Date.now() - startTime
+    );
     return NextResponse.json(
       { error: 'Falha ao criar categoria' },
       { status: 500 }
