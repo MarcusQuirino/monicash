@@ -112,8 +112,17 @@ export async function POST(request: NextRequest) {
 }
 
 // Auto-generate all due transactions
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Security check: Verify the request is from Vercel Cron or authorized source
+    const authHeader = request.headers.get('authorization');
+    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
