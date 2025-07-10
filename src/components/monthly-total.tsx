@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Expense } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { Expense } from '@/lib/types';
 
 type MonthlyTotalProps = {
   expenses: Expense[];
@@ -12,7 +12,7 @@ type MonthlyTotalProps = {
 
 export function MonthlyTotal({
   expenses,
-  title = "Total Mensal",
+  title = 'Total Mensal',
   period,
   isAllTime = false,
 }: MonthlyTotalProps) {
@@ -21,16 +21,16 @@ export function MonthlyTotal({
     0
   );
 
-  const displayTitle = isAllTime ? "Total de Gastos" : title;
+  const displayTitle = isAllTime ? 'Total de Gastos' : title;
   const displayPeriod =
     period ||
-    new Date().toLocaleDateString("pt-BR", {
-      month: "long",
-      year: "numeric",
+    new Date().toLocaleDateString('pt-BR', {
+      month: 'long',
+      year: 'numeric',
     });
 
   return (
-    <Card className="bg-blue-50 border-blue-200">
+    <Card className="border-blue-200 bg-blue-50">
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-blue-600">
           {displayTitle}
@@ -38,10 +38,10 @@ export function MonthlyTotal({
       </CardHeader>
       <CardContent>
         <div className="text-3xl font-bold text-blue-900">
-          R$ {total.toFixed(2).replace(".", ",")}
+          R$ {total.toFixed(2).replace('.', ',')}
         </div>
-        <p className="text-xs text-blue-600 mt-1">
-          {isAllTime ? "Todos os Períodos" : displayPeriod}
+        <p className="mt-1 text-xs text-blue-600">
+          {isAllTime ? 'Todos os Períodos' : displayPeriod}
         </p>
       </CardContent>
     </Card>

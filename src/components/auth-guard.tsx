@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { REGEXP_ONLY_DIGITS } from "input-otp";
+} from '@/components/ui/input-otp';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -17,30 +17,30 @@ interface AuthGuardProps {
 
 const validatePin = async (pin: string): Promise<boolean> => {
   if (!pin || pin.length !== 6) {
-    throw new Error("PIN deve ter 6 dígitos");
+    throw new Error('PIN deve ter 6 dígitos');
   }
 
-  const response = await fetch("/api/auth", {
-    method: "POST",
+  const response = await fetch('/api/auth', {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({ pin }),
   });
 
   if (!response.ok) {
     if (response.status === 401) {
-      throw new Error("PIN incorreto");
+      throw new Error('PIN incorreto');
     }
-    throw new Error("Erro ao verificar PIN");
+    throw new Error('Erro ao verificar PIN');
   }
 
   return true;
 };
 
 export function AuthGuard({ children }: AuthGuardProps) {
-  const [pin, setPin] = useState("");
-  const [submittedPin, setSubmittedPin] = useState("");
+  const [pin, setPin] = useState('');
+  const [submittedPin, setSubmittedPin] = useState('');
 
   // React Query to validate the PIN
   const {
@@ -48,7 +48,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
     error,
     isLoading,
   } = useQuery({
-    queryKey: ["auth", submittedPin],
+    queryKey: ['auth', submittedPin],
     queryFn: () => validatePin(submittedPin),
     enabled: submittedPin.length === 6, // Only run when we have a 6-digit PIN
     retry: false, // Don't retry failed authentication attempts
@@ -64,16 +64,16 @@ export function AuthGuard({ children }: AuthGuardProps) {
   };
 
   const handleLogout = () => {
-    setPin("");
-    setSubmittedPin("");
+    setPin('');
+    setSubmittedPin('');
     // This will trigger a re-render and hide the authenticated content
   };
 
   // Show loading spinner during initial validation
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   // Show login form if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl">Monicash</CardTitle>
@@ -114,10 +114,10 @@ export function AuthGuard({ children }: AuthGuardProps) {
               </InputOTP>
 
               {error && (
-                <p className="text-sm text-red-600 text-center">
+                <p className="text-center text-sm text-red-600">
                   {error instanceof Error
                     ? error.message
-                    : "Erro ao verificar PIN"}
+                    : 'Erro ao verificar PIN'}
                 </p>
               )}
 
@@ -126,15 +126,15 @@ export function AuthGuard({ children }: AuthGuardProps) {
                 disabled={pin.length !== 6 || isLoading}
                 className="w-full"
               >
-                {isLoading ? "Verificando..." : "Entrar"}
+                {isLoading ? 'Verificando...' : 'Entrar'}
               </Button>
 
               {error && (
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setPin("");
-                    setSubmittedPin("");
+                    setPin('');
+                    setSubmittedPin('');
                   }}
                   className="w-full"
                 >
@@ -151,7 +151,7 @@ export function AuthGuard({ children }: AuthGuardProps) {
   // Show authenticated content with logout button
   return (
     <div className="relative">
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute right-4 top-4 z-10">
         <Button
           variant="outline"
           size="sm"

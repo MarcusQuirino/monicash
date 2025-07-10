@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import {
   PieChart,
@@ -7,38 +7,41 @@ import {
   ResponsiveContainer,
   Tooltip,
   Legend,
-} from "recharts";
-import type { Expense } from "@/lib/types";
+} from 'recharts';
+import type { Expense } from '@/lib/types';
 
 type CategoryChartProps = {
   expenses: Expense[];
 };
 
 const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
-  "#FFC658",
-  "#FF7C7C",
+  '#0088FE',
+  '#00C49F',
+  '#FFBB28',
+  '#FF8042',
+  '#8884D8',
+  '#82CA9D',
+  '#FFC658',
+  '#FF7C7C',
 ];
 
 export function CategoryChart({ expenses }: CategoryChartProps) {
   // Group expenses by category
-  const categoryData = expenses.reduce((acc, expense) => {
-    const categoryName = expense.category.name;
-    const amount = parseFloat(expense.amount);
+  const categoryData = expenses.reduce(
+    (acc, expense) => {
+      const categoryName = expense.category.name;
+      const amount = parseFloat(expense.amount);
 
-    if (acc[categoryName]) {
-      acc[categoryName] += amount;
-    } else {
-      acc[categoryName] = amount;
-    }
+      if (acc[categoryName]) {
+        acc[categoryName] += amount;
+      } else {
+        acc[categoryName] = amount;
+      }
 
-    return acc;
-  }, {} as Record<string, number>);
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   // Convert to chart data format
   const chartData = Object.entries(categoryData).map(([name, value]) => ({
@@ -66,12 +69,12 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
     if (active && payload && payload.length) {
       const data = payload[0];
       return (
-        <div className="bg-white p-2 sm:p-3 border rounded-lg shadow-lg text-sm">
-          <p className="font-medium text-xs sm:text-sm">{data.payload.name}</p>
-          <p className="text-blue-600 text-xs sm:text-sm">
-            R$ {data.value.toFixed(2).replace(".", ",")}
+        <div className="rounded-lg border bg-white p-2 text-sm shadow-lg sm:p-3">
+          <p className="text-xs font-medium sm:text-sm">{data.payload.name}</p>
+          <p className="text-xs text-blue-600 sm:text-sm">
+            R$ {data.value.toFixed(2).replace('.', ',')}
           </p>
-          <p className="text-gray-500 text-xs">{data.payload.percentage}%</p>
+          <p className="text-xs text-gray-500">{data.payload.percentage}%</p>
         </div>
       );
     }
@@ -115,7 +118,7 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
         x={x}
         y={y}
         fill="white"
-        textAnchor={x > cx ? "start" : "end"}
+        textAnchor={x > cx ? 'start' : 'end'}
         dominantBaseline="central"
         className="text-xs font-medium"
       >
@@ -126,7 +129,7 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
 
   if (chartData.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
+      <div className="py-8 text-center text-gray-500">
         Nenhum dado para exibir
       </div>
     );
@@ -157,8 +160,8 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
             <Tooltip content={<CustomTooltip />} />
             <Legend
               wrapperStyle={{
-                fontSize: "12px",
-                paddingTop: "10px",
+                fontSize: '12px',
+                paddingTop: '10px',
               }}
               iconSize={12}
             />
@@ -167,7 +170,7 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
       </div>
 
       {/* Mobile Legend Alternative */}
-      <div className="block sm:hidden mt-4">
+      <div className="mt-4 block sm:hidden">
         <div className="grid grid-cols-1 gap-2">
           {chartData.map((entry, index) => (
             <div
@@ -176,14 +179,14 @@ export function CategoryChart({ expenses }: CategoryChartProps) {
             >
               <div className="flex items-center space-x-2">
                 <div
-                  className="w-3 h-3 rounded-full flex-shrink-0"
+                  className="h-3 w-3 flex-shrink-0 rounded-full"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
-                <span className="text-gray-700 truncate">{entry.name}</span>
+                <span className="truncate text-gray-700">{entry.name}</span>
               </div>
-              <div className="flex space-x-2 flex-shrink-0">
-                <span className="text-gray-900 font-medium">
-                  R$ {entry.value.toFixed(2).replace(".", ",")}
+              <div className="flex flex-shrink-0 space-x-2">
+                <span className="font-medium text-gray-900">
+                  R$ {entry.value.toFixed(2).replace('.', ',')}
                 </span>
                 <span className="text-gray-500">({entry.percentage}%)</span>
               </div>
