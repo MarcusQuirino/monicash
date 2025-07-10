@@ -290,20 +290,20 @@ export function RecurringManagement({ categories }: RecurringManagementProps) {
             <AlertDialogDescription>
               Are you sure you want to delete this recurring transaction? This
               action cannot be undone.
-              {deletingTemplate && (
-                <div className="mt-2 rounded bg-gray-50 p-3">
-                  <p className="font-medium">
-                    {deletingTemplate.type === 'EXPENSE' ? 'Expense' : 'Income'}
-                    : R$ {parseFloat(deletingTemplate.amount).toFixed(2)}
-                  </p>
-                  {deletingTemplate.description && (
-                    <p className="text-sm text-gray-600">
-                      {deletingTemplate.description}
-                    </p>
-                  )}
-                </div>
-              )}
             </AlertDialogDescription>
+            {deletingTemplate && (
+              <div className="mt-2 rounded bg-gray-50 p-3">
+                <p className="font-medium">
+                  {deletingTemplate.type === 'EXPENSE' ? 'Expense' : 'Income'}:
+                  R$ {parseFloat(deletingTemplate.amount).toFixed(2)}
+                </p>
+                {deletingTemplate.description && (
+                  <p className="text-sm text-gray-600">
+                    {deletingTemplate.description}
+                  </p>
+                )}
+              </div>
+            )}
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
