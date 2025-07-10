@@ -1,25 +1,33 @@
 import { Suspense } from 'react';
+import { prisma } from '@/lib/db';
 import { RecurringManagement } from '@/components/recurring-management';
 import { Navigation } from '@/components/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 async function getCategories() {
-  // For server-side rendering, construct the full URL
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000');
+  try {
+    const categoriesFromDb = await prisma.category.findMany({
+      include: {
+        _count: {
+          select: { expenses: true },
+        },
+      },
+      orderBy: { name: 'asc' },
+    });
 
-  const response = await fetch(`${baseUrl}/api/categories`, {
-    cache: 'no-store',
-  });
+    // Convert database types to application types
+    const categories = categoriesFromDb.map((category) => ({
+      id: category.id,
+      name: category.name,
+      color: category.color || undefined,
+      _count: category._count,
+    }));
 
-  if (!response.ok) {
+    return categories;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
     throw new Error('Failed to fetch categories');
   }
-
-  return response.json();
 }
 
 export default async function RecurringPage() {
